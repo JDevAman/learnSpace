@@ -1,0 +1,102 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+// Type Aliases
+#define int long long
+#define vi vector<int>
+#define si set<int>
+#define mi map<int, int>
+#define pi pair<int, int>
+
+// Utility Aliases
+#define pq_min priority_queue<int, vector<int>, greater<int>> 
+#define pq_max priority_queue<int>
+
+// Output Shorthand
+#define yes cout << "Yes" << endl
+#define no cout << "No" << endl
+
+void haribhakt_fastio() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+    cout.tie(NULL);
+}
+
+// Function to return an array of primes up to `maxN` in O(n * log(log(n)))
+// vector<int> sieve(int maxN) {
+//     vector<bool> isPrime(maxN + 1, true);
+//     isPrime[0] = isPrime[1] = false;
+
+//     for (int i = 2; i * i <= maxN; ++i) {
+//         if (isPrime[i]) {
+//             for (int j = i * i; j <= maxN; j += i) {
+//                 isPrime[j] = false;
+//             }
+//         }
+//     }
+
+//     vector<int> primes;
+//     for (int i = 2; i <= maxN; ++i) {
+//         if (isPrime[i]) {
+//             primes.push_back(i);
+//         }
+//     }
+//     return primes;
+// }
+
+// Custom comparator function for pairs
+// bool customComparator(const pair<int, int>& a, const pair<int, int>& b) {
+//     if (a.first != b.first) {
+//         return a.first > b.first; // Descending order by first element
+//     }
+//     return a.second < b.second;  // Ascending order by second element
+// }
+
+void solve() {
+    string s; cin>>s;
+    int n = s.length();
+    vector<int> locations(4, -1);
+    int ans = INT_MAX;
+    for(int i=0; i<n; i++){
+        int temp = INT_MIN;
+        if(s[i] == '0'){
+            // 0
+            if(locations[0] != -1){
+                temp = (n-i-1) + (i-locations[0]-1);
+                ans = min(ans, temp);
+            }
+            //5
+            if(locations[2] != -1){
+                temp = (n-i-1) + (i-locations[2]-1);
+                ans = min(ans, temp);
+            }
+            locations[0] = i;
+        }
+        else if(s[i] == '5'){
+            //2
+            if(locations[1] != -1){
+                temp = (n-i-1) + (i-locations[1]-1);
+                ans = min(ans, temp);
+            }
+            //7
+            if(locations[3] != -1){
+                temp = (n-i-1) + (i-locations[3]-1);
+                ans = min(ans, temp);
+            }
+            locations[2] = i;
+        }
+        else if(s[i] == '2') locations[1] = i;
+        else if(s[i] == '7') locations[3] = i;
+    }
+    cout<<ans<<endl;
+}
+
+signed main() {   
+    haribhakt_fastio(); 
+    int t;
+    cin >> t;
+    while (t--) {
+        solve();
+    }
+    return 0;
+}

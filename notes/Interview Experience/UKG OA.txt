@@ -1,0 +1,20 @@
+List = [3,3,6,8], tgt = 9
+return {I,j} where List[i]+List[j] = tgt;
+
+- DS [2, 3, 6, 8]
+- // {3, 0}, {3, 1}, {6,2}, {8,1}
+
+vector<pair<int, int>> findIndexSumToTarget(vector<int> nums, int tgt){
+	map<<int, vector<int>> mpp;
+	for(int i=0; i<nums.size(); i++){
+		mpp.insert({nums[i], i});
+	} 
+	
+	for(int i=0; i<nums.size(); i++){
+		int reqdNum = tgt - nums[i];
+		if(mpp.find(reqdNum) != mpp.end()){
+			mpp[reqdN
+		}
+	}
+
+}

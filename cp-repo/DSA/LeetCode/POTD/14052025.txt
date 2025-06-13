@@ -1,0 +1,25 @@
+Date: 14th May 2025
+
+1.Problem Statement: 
+	- Given a string s, and integer t representing no of transformations. Find length after performing operations.
+	- In one transformation, Replace s[i] with the next nums[s[i] - 'a'] consecutive characters in the alphabet. Transformation wraps around 'z'.
+2.Test Case: 
+	TC1: []
+	TC2: []
+
+===============
+Solving
+
+1. Understanding:
+	- Have three places ones, tens, hundrendth and keep even at ones place always.
+	- Find all unique values.
+2. Follow up questions:
+	- Length of array? Min should be 3. [boundary value testing]
+	- What to return if not possible. [-ve testing]
+3. Intuition:
+	- Have Integer array storing frequency of digits.
+	- Put nums for current index and let recursion handle other cases.
+4. Approach:
+	- List for easier insertion of records (nums).
+5. Time Required:
+6. Hints Required:

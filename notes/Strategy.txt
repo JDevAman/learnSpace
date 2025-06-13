@@ -1,0 +1,10 @@
+1. For DSA:
+- Just Complete NC 150 till Mid of December.
+
+2. System Design:
+- Start with DDIA
+- Grokking system design interview
+- Head First Design Patterns
+- Clean architecture
+
+3. Focus on LLD, SOLID, Design Patterns.
