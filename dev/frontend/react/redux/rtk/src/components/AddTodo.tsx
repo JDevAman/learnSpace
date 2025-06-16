@@ -1,15 +1,33 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 interface AddTodoProps {
   onAdd: (todo: string) => void;
+  onUpdate: (id: string, text: string) => void;
+  editMode: boolean;
+  currentEdit?: { id: string; text: string } | null;
 }
 
-export const AddTodo: React.FC<AddTodoProps> = ({ onAdd }) => {
+export const AddTodo: React.FC<AddTodoProps> = ({
+  onAdd,
+  onUpdate,
+  editMode,
+  currentEdit,
+}) => {
   const [todo, setTodo] = useState("");
+
+  useEffect(() => {
+    if (editMode && currentEdit) {
+      setTodo(currentEdit.text);
+    }
+  }, [editMode, currentEdit]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onAdd(todo);
+    if (editMode && currentEdit) {
+      onUpdate(currentEdit.id, todo);
+    } else {
+      onAdd(todo);
+    }
     setTodo("");
   };
 
@@ -20,7 +38,7 @@ export const AddTodo: React.FC<AddTodoProps> = ({ onAdd }) => {
     >
       <input
         type="text"
-        placeholder="Add a new todo"
+        placeholder="Enter todo"
         value={todo}
         onChange={(e) => setTodo(e.target.value)}
         required
@@ -42,7 +60,7 @@ export const AddTodo: React.FC<AddTodoProps> = ({ onAdd }) => {
           cursor: "pointer",
         }}
       >
-        Add
+        {editMode ? "Set" : "Add"}
       </button>
     </form>
   );
