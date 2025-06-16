@@ -1,1 +1,0 @@
-export function useOnline() {}

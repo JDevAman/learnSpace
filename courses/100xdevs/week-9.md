@@ -1,8 +1,4 @@
-Your Week 9 notes on Custom Hooks are structured well, but a few things can be improved for clarity, accuracy, and consistency, especially for beginner or intermediate understanding. Here's a reviewed and corrected version:
-
----
-
-# ✅ Week 9: Custom Hooks in React
+# ✅ Week 9: Custom Hooks + TS
 
 ---
 
@@ -37,7 +33,7 @@ In function components, we simulate these using hooks:
 - Custom hooks are user-defined functions that encapsulate reusable logic using other React hooks.
 - They help clean up logic, avoid code duplication, and improve maintainability.
 
-### ✅ Rules for Custom Hooks:
+### ✅ Rules for Custom Hooks
 
 1. The function must start with `use` (e.g., `usePosts`, `useTimer`).
 2. It must use at least one React hook (`useState`, `useEffect`, etc.).
@@ -45,6 +41,8 @@ In function components, we simulate these using hooks:
 ---
 
 ## 📦 Types of Custom Hooks
+
+---
 
 ### 1. 🔄 Data Fetching Hook
 
@@ -88,24 +86,117 @@ export function usePosts(n: number) {
 }
 ```
 
-- Can use "useSWR" or "tanstack-reactquery"
+💡 Can use `useSWR` or `@tanstack/react-query` for advanced data fetching.
 
 ---
 
-### 2. ⏱️ Timer / Performance Hook (e.g., useTimer, useDebounce)
+### 2. ⏱️ Timer / Performance Hook
 
-Example: `useDebounce`, `useThrottle`, `useTimeout`
+#### useStableInterval
+
+```tsx
+import { useEffect, useRef } from "react";
+
+// Use your original version only if fn is stable (e.g. useCallback).
+export function useStableInterval(fn: () => void, n: number) {
+  const savedFn = useRef(fn);
+
+  useEffect(() => {
+    savedFn.current = fn; // always keep latest fn
+  }, [fn]);
+
+  useEffect(() => {
+    const id = setInterval(() => savedFn.current(), n * 1000);
+    return () => clearInterval(id);
+  }, [n]);
+}
+```
+
+---
+
+#### useDebounce
+
+```tsx
+import { useEffect, useState } from "react";
+
+type DebouncedProps = {
+  input: string;
+  time: number;
+};
+
+// Min difference b/w two timers should be greater than certain value to be triggered.
+export function useDebounce({ input, time }: DebouncedProps): string {
+  const [debouncedValue, setDebouncedValue] = useState(input);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedValue(input), time);
+    return () => clearTimeout(timer);
+  }, [input, time]);
+
+  return debouncedValue;
+}
+```
+
+🧠 Examples: `useDebounce`, `useThrottle`, `useTimeout`
 
 ---
 
 ### 3. 🌐 Browser Functionality Hooks
 
-- useOnline Hook:
-- window.navigator.onLine returns true or false
-``` tsx
+---
+
+#### useIsOnline
+
+```tsx
+import { useEffect, useState } from "react";
+
+export function useIsOnline() {
+  const [isOnline, setIsOnline] = useState(window.navigator.onLine);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    // ✅ Cleanup to remove listeners on unmount
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
+  return isOnline;
+}
 ```
 
-Examples:
+---
+
+#### useMousePointer
+
+```tsx
+import { useEffect, useState } from "react";
+
+export function useMousePointer() {
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+
+  const handleMouseMove = (e: MouseEvent) => {
+    setPos({ x: e.clientX, y: e.clientY });
+  };
+
+  useEffect(() => {
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, []);
+
+  return pos;
+}
+```
+
+✅ Examples:
 
 - `useWindowSize` – Tracks window resizing
 - `useOnlineStatus` – Detects online/offline state
@@ -121,9 +212,10 @@ When using `useState`, always provide a type when initializing with arrays or ob
 const [todos, setTodos] = useState<{ id: number; title: string }[]>([]);
 ```
 
-You can also define types separately:
+Or use a type alias for clarity:
 
 ```ts
 type Todo = { id: number; title: string };
 const [todos, setTodos] = useState<Todo[]>([]);
 ```
+
