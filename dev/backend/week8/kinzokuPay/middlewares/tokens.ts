@@ -1,18 +1,24 @@
-const jwt = require("jsonwebtoken");
-const config = require("../config");
+import jwt, { JwtPayload } from "jsonwebtoken";
+import config from "../config";
 
-function signjwt(fetchedDetails) {
-    console.log(fetchedDetails);
-    return jwt.sign(fetchedDetails, config.jwt_secret, { expiresIn: '1h' });
+interface UserPayload {
+    _id: string;
+    phone?: string;
+    email?: string;
+    name?: string;
 }
 
-function verifyjwt(token) {
+function signjwt(fetchedDetails: UserPayload): string {
+    return jwt.sign(fetchedDetails, config.jwt_secret, { expiresIn: "1h" });
+}
+
+function verifyjwt(token: string): JwtPayload | string {
     try {
         return jwt.verify(token, config.jwt_secret);
     } catch (err) {
         console.error("JWT verification failed:", err);
-        throw err;
+        throw new Error("Invalid or expired token");
     }
 }
 
-module.exports = { signjwt, verifyjwt };
+export { signjwt, verifyjwt, UserPayload };

@@ -4,4 +4,4 @@ function throwError(message, status = 400) {
     throw err;
 }
 
-module.exports = throwError;
+export default throwError;

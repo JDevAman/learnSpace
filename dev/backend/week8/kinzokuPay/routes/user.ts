@@ -1,116 +1,134 @@
-const express = require("express");
-const { signjwt } = require("../middlewares/tokens");
-const config = require("../config");
-const argon2 = require("argon2");
-const { userLoginModel, userSignUpModel, updateInfoModel } = require("../db");
-const throwError = require("../middlewares/error");
-const { userSignInSchema, userSignUpSchema, updateUserSchema } = require("../schema/userValidator");
+import express from "express";
+import { signjwt } from "../middlewares/tokens";
+import config from "../config";
+import argon2 from "argon2";
+import { UserModel, AccountModel } from "../db";
+import throwError from "../middlewares/error";
+import {
+    userSignInSchema,
+    userSignUpSchema,
+    updateUserSchema,
+} from "../schema/userValidator";
+import authenticate from "../middlewares/authMiddleware";
+
 const userRouter = express.Router();
-const authenticate = require("../middlewares/authMiddleware");
 
-
-// cookies with jwt instead of localStorage
-// No JWT issued here
-userRouter.post('/signup', async function (req, res) {
+// ✅ Signup
+userRouter.post("/signup", async (req, res) => {
     try {
         const signUpBody = userSignUpSchema.safeParse(req.body);
-        if (signUpBody.success) {
-            const parsedObj = signUpBody.data;
-            const hashedPw = await argon2.hash(parsedObj.password + config.pepper);
-            await userSignUpModel.create({
-                ...parsedObj,
-                password: hashedPw
-            })
-            res.status(201).send({
-                message: "User Succesfully Created"
-            });
+        if (!signUpBody.success) {
+            return res.status(422).json({ message: "Invalid input data!" });
         }
-        else {
-            res.status(512).send({
-                message: "Please check your input data!"
-            })
-        }
-    }
-    catch {
+
+        const parsedObj = signUpBody.data;
+        const hashedPw = await argon2.hash(parsedObj.password + config.pepper);
+
+        const user = await UserModel.create({
+            ...parsedObj,
+            password: hashedPw,
+        });
+
+        const userId = user._id;
+        // Account also created
+        await AccountModel.create({
+            userId,
+            balance: 1 + Math.random() * 10000
+        })
+
+        return res.status(201).json({ message: "User successfully created" });
+    } catch (err) {
+        console.error(err);
         throwError("Couldn't Sign Up!", 409);
     }
-
-})
-
-// login should be post instead of get as get can expose credentials
-userRouter.post('/signin', async function (req, res) {
-    try {
-        const signInBody = userSignInSchema.safeParse(req.body);
-        if (signInBody.success) {
-            const parsedObj = signInBody.data;
-            const fetchedDetails = await userLoginModel.findOne({ userName: parsedObj.userName });
-            const passwordCompare = await argon2.verify(fetchedDetails.password, parsedObj.password + config.pepper);
-            if (!passwordCompare) {
-                return res.status(402).send({
-                    message: "Please give valid credentials"
-                })
-            }
-            const payload = {
-                userName: fetchedDetails.userName
-            }
-            const token = signjwt(payload);
-            res.cookie("token", token, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'Strict',
-                path: "/",
-                maxAge: 60 * 60 * 1000
-            })
-            res.status(201).send({
-                message: "Successfully logged in!"
-            });
-        }
-        else {
-            res.status(512).send({
-                message: "Please give valid credentials"
-            })
-        }
-    }
-    catch (err) {
-        console.error(err);
-        throwError("Couldnt Sign In!", 409);
-    }
-
-})
-
-// auth middleware
-userRouter.use(authenticate);
-// find users with name ?filer=<name>
-userRouter.get("/bulk", async function (req, res) {
-    const filterParams = req.query.filter;
-    if (filterParams !== '') {
-        const users = await userLoginModel.find({
-            $or: [
-                { firstName: { $regex: filterParams } },
-                { lastName: { $regex: filterParams } },
-            ]
-        })
-        console.log(users);
-    }
-    res.send({
-        status: 200,
-    });
-})
-
-
-userRouter.put('/update-profie', authenticate, async function (req, res) {
-    const updateUserBody = updateUserSchema.safeParse(req.body);
-    if (updateUserBody.success) {
-        const updatedDetails = updateUserBody.data;
-        await updateInfoModel.updateOne({ userName: req.user.userName }, { $set: updatedDetails });
-    }
-    console.log(updateUserBody);
-    res.status(201).send({ message: "User Profile Updated" });
-})
-
-userRouter.post('/logout', (req, res) => {
-    res.clearCookie("token");
-    res.send({ message: "Logged out" });
 });
 
-module.exports = userRouter;
+// ✅ Signin
+userRouter.post("/signin", async (req, res) => {
+    try {
+        const signInBody = userSignInSchema.safeParse(req.body);
+        if (!signInBody.success) {
+            return res.status(422).json({ message: "Invalid credentials!" });
+        }
+
+        const parsedObj = signInBody.data;
+        const fetchedDetails = await UserModel.findOne({
+            userName: parsedObj.userName,
+        });
+
+        if (!fetchedDetails) {
+            return res.status(401).json({ message: "User not found" });
+        }
+
+        const passwordCompare = await argon2.verify(
+            fetchedDetails.password,
+            parsedObj.password + config.pepper
+        );
+
+        if (!passwordCompare) {
+            return res.status(401).json({ message: "Incorrect password" });
+        }
+
+        const token = signjwt({ userName: fetchedDetails.userName });
+
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "Strict",
+            path: "/",
+            maxAge: 60 * 60 * 1000,
+        });
+
+        return res.status(200).json({ message: "Successfully logged in!" });
+    } catch (err) {
+        console.error(err);
+        throwError("Couldn't Sign In!", 409);
+    }
+});
+
+// ✅ Protected routes
+userRouter.use(authenticate);
+
+// ✅ Search users
+userRouter.get("/bulk", async (req, res) => {
+    const filterParams = req.query.filter as string;
+
+    if (!filterParams) {
+        return res.status(400).json({ message: "Missing filter param" });
+    }
+
+    const users = await UserModel.find({
+        $or: [
+            { firstName: { $regex: filterParams, $options: "i" } },
+            { lastName: { $regex: filterParams, $options: "i" } },
+        ],
+    });
+
+    return res.status(200).json({ users });
+});
+
+// ✅ Update user profile
+userRouter.put("/update-profile", async (req, res) => {
+    const updateUserBody = updateUserSchema.safeParse(req.body);
+
+    if (!updateUserBody.success) {
+        return res.status(422).json({ message: "Invalid profile data" });
+    }
+
+    const updatedDetails = updateUserBody.data;
+
+    await UserModel.updateOne(
+        { userName: (req as any).user.userName },
+        { $set: updatedDetails }
+    );
+
+    return res.status(200).json({ message: "User profile updated" });
+});
+
+// ✅ Logout
+userRouter.post("/logout", (_req, res) => {
+    res.clearCookie("token");
+    return res.json({ message: "Logged out" });
+});
+
+export default userRouter;

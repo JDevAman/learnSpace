@@ -1,10 +1,13 @@
-const express = require('express');
-const userRouter = require('./user');
+import express from "express"
+import userRouter from "./user";
+import accountRouter from "./account";
+
 const mainRouter = express.Router();
 
 mainRouter.get("/", function (req, res) {
-
+    res.send("API is live")
 })
 mainRouter.use("/user", userRouter);
+mainRouter.use("/account", accountRouter);
 
-module.exports = mainRouter;
+export default mainRouter;

@@ -1,9 +1,9 @@
-const express = require('express');
-const cors = require('cors');
-const config = require('./config');
+import express from "express"
+import cors from "cors";
+import config from "./config";
 
-const mainRouter = require("./routes/index");
-const cookieParser = require('cookie-parser');
+import mainRouter from "./routes/index";
+import cookieParser  from "cookie-parser";
 const app = express();
 
 // Middlewares

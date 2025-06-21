@@ -1,5 +1,4 @@
-const { verifyjwt } = require('./tokens');
-
+import { verifyjwt } from './tokens';
 
 // using cookies + Jwt to authenticate
 function authenticate(req, res, next) {
@@ -16,4 +15,4 @@ function authenticate(req, res, next) {
     }
 }
 
-module.exports = authenticate;
+export default authenticate;

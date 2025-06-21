@@ -1,4 +1,5 @@
-require('dotenv/config');
+import dotenv from "dotenv";
+dotenv.config();
 
 const config = {
     jwt_secret: process.env.JWT_SECRET || 'secret',
@@ -7,4 +8,4 @@ const config = {
     pepper: process.env.PEPPER || 'hari'
 }
 
-module.exports = config;
+export default config;

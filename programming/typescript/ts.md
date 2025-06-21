@@ -1,230 +1,512 @@
-# TypeScript
+# TypeScript Complete Notes
 
 ## Introduction
 
-- TypeScript is a strongly typed language, a syntactical superset of JavaScript developed by Microsoft.
-- TS is backwards compatible.
+TypeScript is a strongly typed programming language that builds on JavaScript by adding static type definitions. It's a syntactical superset of JavaScript developed by Microsoft and is fully backwards compatible with JavaScript.
 
-### How TS Code Runs
+### How TypeScript Code Runs
 
-- TS code never runs directly. It is **transpiled** to a JS file.
-- **Transpilation**: compile-time type checks to catch errors.
-- Errors are caught during transpilation; the resulting JS is what runs.
+- TypeScript code never runs directly in browsers or Node.js
+- It must be **transpiled** (compiled) to JavaScript first
+- **Transpilation**: Performs compile-time type checks to catch errors before runtime
+- Errors are caught during transpilation; only the resulting JavaScript code runs
 
-### Compiler
+### Compilers
 
-- `tsc` (official), `eslint`, `swc`
+- **tsc** (TypeScript Compiler - official)
+- **esbuild** (fast bundler with TS support)
+- **swc** (Speedy Web Compiler)
+- **Babel** (with TypeScript preset)
 
 ---
 
 ## Getting Started
 
-### Starter Template
+### Project Setup
 
 ```bash
+# Initialize project
 pnpm init
-pnpm add typescript
 
-# generate tsconfig
+# Install TypeScript
+pnpm add -D typescript
+pnpm add -D @types/node  # For Node.js types
+
+# Generate tsconfig.json
 pnpm exec tsc --init
 
-# compile
+# Compile TypeScript files
 pnpm exec tsc
 
-# build (using tsconfig)
-tsc -b   # if installed globally
+# Build using tsconfig settings
+tsc -b   # if TypeScript is installed globally
 ```
 
-### ts-node-dev for Development with node-ts
+### Development Setup with ts-node
+
+```bash
+# Install development dependencies
+pnpm add -D ts-node-dev nodemon
+
+# Add to package.json scripts
+```
 
 ```json
-"scripts": {
-  "dev": "ts-node-dev --respawn --transpile-only src/index.ts"
+{
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  }
 }
 ```
 
 ---
 
-## Basic Types in TypeScript
+## Basic Types
 
-1. **Number**
-   ```ts
-   let age: number = 5;
-   ```
+### Primitive Types
 
-2. **String**
-   ```ts
-   let name: string = "Aman";
-   ```
-
-3. **Boolean**
-   ```ts
-   let isStudent: boolean = false;
-   ```
-
-4. **Null**
-   ```ts
-   let myVar: null = null;
-   ```
-
-5. **Undefined**
-   ```ts
-   let myVar: undefined = undefined;
-   ```
-
----
-
-## Code Implementation
-
-### 1. Passing Arguments to Function
-
-**Callback:**
 ```ts
-fn: () => void
+// Number
+let age: number = 25;
+let price: number = 99.99;
+
+// String
+let name: string = "John Doe";
+let message: string = `Hello, ${name}!`;
+
+// Boolean
+let isStudent: boolean = true;
+let isComplete: boolean = false;
+
+// Null and Undefined
+let nullValue: null = null;
+let undefinedValue: undefined = undefined;
+
+// Any (avoid using when possible)
+let anything: any = 42;
+anything = "now I'm a string";
+anything = true;
 ```
 
-### 2. Defining Return Type of Function
+### Array Types
 
-**Callback:**
 ```ts
-fn: () => void
+// Array of numbers
+let numbers: number[] = [1, 2, 3, 4, 5];
+let scores: Array<number> = [95, 87, 92];
+
+// Array of strings
+let names: string[] = ["Alice", "Bob", "Charlie"];
+
+// Mixed array (using union types)
+let mixed: (string | number)[] = ["hello", 42, "world"];
+```
+
+### Array Methods with Type Safety
+
+```ts
+const numbers: number[] = [1, 2, 3, 4, 5];
+
+// Filter method maintains type safety
+const evenNumbers: number[] = numbers.filter(num => num % 2 === 0);
+
+// Map method can change types
+const stringNumbers: string[] = numbers.map(num => num.toString());
+
+// Find method returns T | undefined
+const found: number | undefined = numbers.find(num => num > 3);
 ```
 
 ---
 
-## tsconfig.json
+## Functions
 
-Important options:
-
-1. `target`
-2. `rootDir`
-3. `outDir`
-4. `noImplicitAny`
-5. `removeComments`
-
----
-
-## Interface
+### Function Type Annotations
 
 ```ts
-interface Person {
-  name: string;
-  age: number;
+// Basic function with parameters and return type
+function add(a: number, b: number): number {
+  return a + b;
+}
+
+// Function with no return value
+function greet(name: string): void {
+  console.log(`Hello, ${name}!`);
+}
+
+// Optional parameters
+function buildName(firstName: string, lastName?: string): string {
+  return lastName ? `${firstName} ${lastName}` : firstName;
+}
+
+// Default parameters
+function multiply(a: number, b: number = 1): number {
+  return a * b;
 }
 ```
 
----
-
-## Type
+### Function Types
 
 ```ts
-type User = {
-  name: string;
-  age: number;
+// Function type definition
+type MathOperation = (x: number, y: number) => number;
+
+// Using the function type
+const subtract: MathOperation = (a, b) => a - b;
+
+// Callback function types
+function processArray(arr: number[], callback: (item: number) => number): number[] {
+  return arr.map(callback);
+}
+
+// Usage
+const doubled = processArray([1, 2, 3], (x) => x * 2);
+```
+
+---
+
+## Advanced Types
+
+### Unions
+
+Unions allow a variable to be one of several types:
+
+```ts
+type StringOrNumber = string | number;
+
+function formatId(id: StringOrNumber): string {
+  if (typeof id === "string") {
+    return id.toUpperCase();
+  }
+  return id.toString();
+}
+
+// Usage
+formatId("abc123");  // string
+formatId(123);       // number
+```
+
+### Intersections
+
+Intersections combine multiple types into one:
+
+```ts
+type Name = {
+  firstName: string;
+  lastName: string;
+};
+
+type Contact = {
+  email: string;
+  phone: string;
+};
+
+type Person = Name & Contact;
+
+const person: Person = {
+  firstName: "John",
+  lastName: "Doe",
+  email: "john@example.com",
+  phone: "123-456-7890"
 };
 ```
 
 ---
 
-## Features
+## Interfaces vs Types
 
-1. **Unions**
-   Unions allow you to define a type that can be one of several types.
+### Interface
 
-2. **Intersections**
-   Intersections allow you to create a type that has every property of multiple types or interfaces.
+```ts
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
 
----
+// Extending interfaces
+interface Admin extends User {
+  permissions: string[];
+}
 
-## Interface vs Type
+// Interface merging (declaration merging)
+interface User {
+  createdAt: Date;  // This gets merged with the above User interface
+}
+```
 
-### Major Differences
+### Type
 
-1. **Declaration Syntax**
+```ts
+type Product = {
+  id: number;
+  name: string;
+  price: number;
+};
 
-   **Type**
-   - Uses the `type` keyword.
-   - More flexible syntax: can represent primitive types, unions, intersections, and more.
+// Extending types using intersections
+type DigitalProduct = Product & {
+  downloadUrl: string;
+};
 
-   **Interface**
-   - Uses the `interface` keyword.
-   - Typically used for defining the structure of objects.
-
-2. **Extension and Merging**
-
-   **Type**
-   - Supports extending types.
-   - Can't be merged — redefining a type with the same name replaces the previous one.
-
-   **Interface**
-   - Supports extending interfaces using the `extends` keyword.
-   - Automatically merges with same-name interfaces by combining their declarations.
-
-3. **Declaration vs Implementation**
-
-   **Type**
-   - Can represent any type: primitives, unions, intersections, etc.
-   - Suitable for describing the shape of data.
-
-   **Interface**
-   - Mainly used for describing object shapes.
-   - Can define contracts for classes.
-
----
-
-### Other Differences
-
-**Type Overriding**
-- Types cannot be overridden or merged.
-- Redefining a type with the same name replaces it.
-- Interfaces **automatically merge** when declared with the same name.
-
-**Object Literal Strictness**
-- Types are **more lenient** when dealing with object literal assignments.
-- Interfaces enforce **strict object shapes**.
-
-**Implementation for Classes**
-- Interfaces are used to define contracts for class implementations.
-- Types are more versatile for complex or utility types.
-
----
+// Union types (not possible with interfaces)
+type Status = "pending" | "approved" | "rejected";
+```
 
 ### When to Use Which
 
-**Use `type`**:
-- For advanced scenarios with unions, intersections, or mapped types.
-- When dealing with primitive types, tuples, or non-object types.
-- For creating utility types using conditional types.
+**Use `interface` when:**
+- Defining object shapes or class contracts
+- You need declaration merging
+- Working with object-oriented patterns
+- Creating extensible APIs
 
-**Use `interface`**:
-- When defining object structure or class contracts.
-- When extending or merging interfaces.
-- For consistent and strict object shapes.
+**Use `type` when:**
+- Creating union types
+- Using intersections
+- Defining primitive aliases
+- Working with computed or conditional types
 
-## Arrays
-Arrays in TS - filter method
+---
 
 ## Generics
 
-## Enums
-Enumeration - set of named constants
-human-readable way to represent set of constant values.
-Concept used across different languages. (not keyword in js)
-
-Alternative: 
-define using type.
-
-Example: Game - predefined inputs/operation
+Generics provide a way to create reusable components that work with multiple types:
 
 ```ts
-  enum Direction{
-    Left, Right, Up, Down
-  }
+// Generic function
+function identity<T>(arg: T): T {
+  return arg;
+}
+
+// Usage - type is inferred
+const stringResult = identity("hello");     // string
+const numberResult = identity(42);          // number
+
+// Array generic function
+function getFirstElement<T>(arr: T[]): T | undefined {
+  return arr[0];
+}
+
+const firstString = getFirstElement(["a", "b", "c"]);  // string | undefined
+const firstNumber = getFirstElement([1, 2, 3]);        // number | undefined
+
+// Generic interface
+interface ApiResponse<T> {
+  data: T;
+  status: number;
+  message: string;
+}
+
+// Usage
+const userResponse: ApiResponse<User> = {
+  data: { id: 1, name: "John", email: "john@example.com" },
+  status: 200,
+  message: "Success"
+};
 ```
 
-Pros: Human Readable, Suggestion
+### Generic Constraints
 
-## Import
+```ts
+interface Lengthwise {
+  length: number;
+}
 
+function logLength<T extends Lengthwise>(arg: T): T {
+  console.log(arg.length);  // Now we know arg has a .length property
+  return arg;
+}
 
-## Export
+logLength("hello");        // ✅ string has length
+logLength([1, 2, 3]);      // ✅ array has length
+// logLength(42);          // ❌ number doesn't have length
+```
+
+---
+
+## Enums
+
+Enums allow you to define a set of named constants:
+
+```ts
+// Numeric enum (default)
+enum Direction {
+  Up,      // 0
+  Down,    // 1
+  Left,    // 2
+  Right    // 3
+}
+
+// String enum
+enum Status {
+  Pending = "PENDING",
+  Approved = "APPROVED",
+  Rejected = "REJECTED"
+}
+
+// Mixed enum
+enum Response {
+  No = 0,
+  Yes = 1,
+  Maybe = "MAYBE"
+}
+
+// Usage
+function move(direction: Direction) {
+  switch (direction) {
+    case Direction.Up:
+      console.log("Moving up");
+      break;
+    case Direction.Down:
+      console.log("Moving down");
+      break;
+  }
+}
+
+move(Direction.Up);
+```
+
+### Enum Alternatives
+
+```ts
+// Using const assertion (more tree-shakable)
+const Direction = {
+  Up: 'UP',
+  Down: 'DOWN',
+  Left: 'LEFT',
+  Right: 'RIGHT'
+} as const;
+
+type Direction = typeof Direction[keyof typeof Direction];
+
+// Or using union types
+type Status = "pending" | "approved" | "rejected";
+```
+
+---
+
+## Imports and Exports
+
+TypeScript follows the ES6 module system:
+
+```ts
+// types.ts - Named exports
+export interface User {
+  id: number;
+  name: string;
+}
+
+export type Status = "active" | "inactive";
+
+export const DEFAULT_TIMEOUT = 5000;
+
+// utils.ts - Default export
+export default function formatDate(date: Date): string {
+  return date.toISOString().split('T')[0];
+}
+
+// main.ts - Importing
+import formatDate from './utils';           // Default import
+import { User, Status } from './types';     // Named imports
+import { DEFAULT_TIMEOUT as TIMEOUT } from './types';  // Renamed import
+
+// Type-only imports (TypeScript specific)
+import type { User as UserType } from './types';
+
+// Mixed imports
+import formatDate, { User } from './utils';
+
+// Re-exports
+export { User, Status } from './types';
+export { default as formatDate } from './utils';
+```
+
+---
+
+## TypeScript Configuration (tsconfig.json)
+
+### Essential Options
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",                    // JavaScript version to compile to
+    "module": "commonjs",                  // Module system
+    "lib": ["ES2020", "DOM"],             // Type definitions to include
+    "outDir": "./dist",                   // Output directory
+    "rootDir": "./src",                   // Input directory
+    "strict": true,                       // Enable all strict type-checking options
+    "noImplicitAny": true,               // Error on expressions with implied 'any'
+    "strictNullChecks": true,            // Enable strict null checks
+    "strictFunctionTypes": true,         // Enable strict checking of function types
+    "noImplicitReturns": true,           // Error when not all code paths return a value
+    "noUnusedLocals": true,              // Error on unused local variables
+    "noUnusedParameters": true,          // Error on unused parameters
+    "removeComments": true,              // Remove comments from output
+    "sourceMap": true,                   // Generate source maps
+    "declaration": true,                 // Generate .d.ts files
+    "esModuleInterop": true,             // Enable interoperability between CommonJS and ES modules
+    "skipLibCheck": true,                // Skip type checking of declaration files
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
+```
+
+---
+
+## Best Practices
+
+1. **Enable strict mode** in tsconfig.json
+2. **Avoid `any`** - use `unknown` instead when type is truly unknown
+3. **Use type assertions carefully** - prefer type guards
+4. **Prefer interfaces for object shapes** and types for unions
+5. **Use meaningful names** for generic type parameters
+6. **Leverage type inference** - don't over-annotate
+7. **Use const assertions** for immutable data
+8. **Organize types** in separate files when they become complex
+
+### Type Guards
+
+```ts
+function isString(value: unknown): value is string {
+  return typeof value === 'string';
+}
+
+function processValue(value: unknown) {
+  if (isString(value)) {
+    // TypeScript knows value is string here
+    console.log(value.toUpperCase());
+  }
+}
+```
+
+### Utility Types
+
+```ts
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  age: number;
+}
+
+// Pick specific properties
+type UserSummary = Pick<User, 'id' | 'name'>;
+
+// Make all properties optional
+type PartialUser = Partial<User>;
+
+// Make all properties required
+type RequiredUser = Required<User>;
+
+// Omit specific properties
+type UserWithoutAge = Omit<User, 'age'>;
+
+// Create type from object keys
+type UserKeys = keyof User;  // "id" | "name" | "email" | "age"
+```
