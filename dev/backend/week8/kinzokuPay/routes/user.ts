@@ -1,9 +1,9 @@
 import express from "express";
-import { signjwt } from "../middlewares/tokens";
+import { signjwt } from "../utils/tokens";
 import config from "../config";
 import argon2 from "argon2";
 import { UserModel, AccountModel } from "../db";
-import throwError from "../middlewares/error";
+import throwError from "../utils/error";
 import {
     userSignInSchema,
     userSignUpSchema,
@@ -33,7 +33,7 @@ userRouter.post("/signup", async (req, res) => {
         // Account also created
         await AccountModel.create({
             userId,
-            balance: 1 + Math.random() * 10000
+            balance: 0
         })
 
         return res.status(201).json({ message: "User successfully created" });

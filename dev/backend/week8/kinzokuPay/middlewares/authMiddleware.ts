@@ -1,4 +1,4 @@
-import { verifyjwt } from './tokens';
+import { verifyjwt } from '../utils/tokens';
 
 // using cookies + Jwt to authenticate
 function authenticate(req, res, next) {

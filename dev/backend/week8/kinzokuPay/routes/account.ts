@@ -1,71 +1,202 @@
 import express from "express";
-import { balanceSchema, transferSchema } from "../schema/accountValidator";
-import throwError from "../middlewares/error";
+import {
+    transferSchema,
+    addMoneySchema,
+    requestMoneySchema
+} from "../schema/accountValidator";
+import throwError from "../utils/error";
 import authenticate from "../middlewares/authMiddleware";
 import mongoose from "mongoose";
 import { AccountModel } from "../db";
+import logTransaction from "../utils/logTransaction";
 
 const accountRouter = express.Router();
 
+const EXPIRY_DAYS = 5;
+const MS_IN_DAY = 24 * 60 * 60 * 1000;
+const now = () => new Date();
+
 // ACID Transaction for transfer money
-accountRouter.post("/transfer", authenticate, async (req, res) => {
+accountRouter.post("/transfer", authenticate, async (req, res, next) => {
     const session = await mongoose.startSession();
     try {
         const transferBody = transferSchema.safeParse(req.body);
         if (!transferBody.success) {
-            return res.status(422).json({ message: "Invalid input data!" });
+            console.error("Validation Error:", transferBody.error.format());
+            throwError("Invalid input data!", 422);
         }
-        const { from, to, amount } = transferBody.data;
-        // Start Transaction
+
+        const from = req.user.id;
+        const { to, amount } = transferBody.data;
+
+        if (from === to) throwError("Cannot transfer to yourself", 400);
+
         session.startTransaction();
-        const senderAccount = await AccountModel.findOne({ userId: from }).session(session);
-        const receiverAccount = await AccountModel.findOne({ userId: to }).session(session);
 
-        if (!senderAccount || !receiverAccount) {
-            await session.abortTransaction();
-            return res.status(404).json({ message: "Account not found" });
-        }
+        const sender = await AccountModel.findOne({ userId: from }).session(session);
+        const receiver = await AccountModel.findOne({ userId: to }).session(session);
 
-        if (senderAccount.balance < amount) {
-            await session.abortTransaction();
-            return res.status(400).json({ message: "Insufficient balance" });
-        }
+        if (!sender || !receiver) throwError("Account not found", 404);
+        if (sender.balance < amount) throwError("Insufficient balance", 400);
 
+        await AccountModel.updateOne({ userId: from }, { $inc: { balance: -amount } }).session(session);
+        await AccountModel.updateOne({ userId: to }, { $inc: { balance: amount } }).session(session);
 
-        await senderAccount.updateOne({ userId: from }, {
-            $dec: { balance: amount }
-        }).session(session);
-        await receiverAccount.updateOne({ userId: to }, {
-            $inc: { balance: amount }
-        }).session(session);
+        await logTransaction({ from, to, amount, type: "transfer", status: "success", session });
 
         await session.commitTransaction();
-        session.endSession();
-        return res.status(200).json({ message: "Transfer successful" });
 
-    }
-    catch (err) {
+        res.status(200).json({ message: "Transfer successful", amount });
+    } catch (err) {
         await session.abortTransaction();
+        next(err);
+    } finally {
         session.endSession();
-        console.error("Transfer Failed", err);
-        throwError("Couldn't Transfer Money!", 511);
     }
-})
+});
 
-accountRouter.get("/balance", authenticate, async (req, res) => {
+// Request money (creates pending transaction)
+accountRouter.post("/request", authenticate, async (req, res, next) => {
     try {
-        const balanceBody = balanceSchema.safeParse(req.body);
-        console.log(req.body)
-        if (!balanceBody.success) {
-            return res.status(422).json({ message: "Invalid input data!" });
+        const requestBody = requestMoneySchema.safeParse(req.body);
+        if (!requestBody.success) {
+            console.error("Validation Error:", requestBody.error.format());
+            throwError("Invalid input data!", 422);
         }
-        const userData = await AccountModel.findOne({ userId: balanceBody.data.from });
-        return res.status(200).json({ data: userData?.balance });
+
+        const from = req.user.id;
+        const { to, amount } = requestBody.data;
+
+        if (from === to) throwError("Cannot request money from yourself", 400);
+
+        const fromAccount = await AccountModel.findOne({ userId: from }).lean();
+        const toAccount = await AccountModel.findOne({ userId: to }).lean();
+        if (!fromAccount || !toAccount) throwError("Account not found", 404);
+
+        const expiresAt = new Date(Date.now() + EXPIRY_DAYS * MS_IN_DAY);
+
+        const transaction = await logTransaction({
+            from,
+            to,
+            amount,
+            type: "request",
+            status: "pending",
+            session: null // not in transaction block
+        });
+
+        transaction.expiresAt = expiresAt;
+        await transaction.save();
+
+        res.status(200).json({
+            message: "Money request sent",
+            amount,
+            requestId: transaction._id,
+            expiresAt
+        });
+    } catch (err) {
+        next(err);
     }
-    catch (err) {
-        console.error("Balance Check Failed", err);
-        throwError("Couldn't Check Balance!", 511);
+});
+
+// Accept money request
+accountRouter.post("/request/accept/:id", authenticate, async (req, res, next) => {
+    const session = await mongoose.startSession();
+    try {
+        const userId = req.user.id;
+        const transaction = await mongoose.model("Transaction").findById(req.params.id).session(session);
+
+        if (!transaction || transaction.status !== "pending") throwError("Invalid transaction", 400);
+        if (transaction.to.toString() !== userId) throwError("Unauthorized", 403);
+        if (transaction.expiresAt && transaction.expiresAt < now()) throwError("Request expired", 400);
+
+        session.startTransaction();
+
+        const fromAccount = await AccountModel.findOne({ userId: transaction.from }).session(session);
+        const toAccount = await AccountModel.findOne({ userId: transaction.to }).session(session);
+
+        if (!fromAccount || !toAccount) throwError("Account not found", 404);
+        if (toAccount.balance < transaction.amount) throwError("Insufficient balance", 400);
+
+        await AccountModel.updateOne({ userId: transaction.to }, { $inc: { balance: -transaction.amount } }).session(session);
+        await AccountModel.updateOne({ userId: transaction.from }, { $inc: { balance: transaction.amount } }).session(session);
+
+        transaction.status = "completed";
+        transaction.completedAt = now();
+        await transaction.save({ session });
+
+        await session.commitTransaction();
+        res.status(200).json({ message: "Request accepted and money transferred" });
+    } catch (err) {
+        await session.abortTransaction();
+        next(err);
+    } finally {
+        session.endSession();
     }
-})
+});
+
+// Reject money request
+accountRouter.post("/request/reject/:id", authenticate, async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const transaction = await mongoose.model("Transaction").findById(req.params.id);
+
+        if (!transaction || transaction.status !== "pending") throwError("Invalid transaction", 400);
+        if (transaction.to.toString() !== userId) throwError("Unauthorized", 403);
+        if (transaction.expiresAt && transaction.expiresAt < now()) throwError("Request expired", 400);
+
+        transaction.status = "rejected";
+        transaction.rejectedAt = now();
+        await transaction.save();
+
+        res.status(200).json({ message: "Money request rejected" });
+    } catch (err) {
+        next(err);
+    }
+});
+
+// Get balance
+accountRouter.get("/balance", authenticate, async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const account = await AccountModel.findOne({ userId }).lean();
+        if (!account) throwError("Account not found", 404);
+
+        res.status(200).json({ balance: account.balance });
+    } catch (err) {
+        next(err);
+    }
+});
+
+// Add money
+accountRouter.post("/add-money", authenticate, async (req, res, next) => {
+    const session = await mongoose.startSession();
+    try {
+        const body = addMoneySchema.safeParse(req.body);
+        if (!body.success) {
+            console.error("Validation Error:", body.error.format());
+            throwError("Invalid input data!", 422);
+        }
+
+        const userId = req.user.id;
+        const { amount } = body.data;
+
+        session.startTransaction();
+
+        const account = await AccountModel.findOne({ userId }).session(session);
+        if (!account) throwError("Account not found", 404);
+
+        await AccountModel.updateOne({ userId }, { $inc: { balance: amount } }).session(session);
+
+        await logTransaction({ from: null, to: userId, amount, type: "add", status: "success", session });
+
+        await session.commitTransaction();
+        res.status(200).json({ message: "Money added", amount });
+    } catch (err) {
+        await session.abortTransaction();
+        next(err);
+    } finally {
+        session.endSession();
+    }
+});
 
 export default accountRouter;
