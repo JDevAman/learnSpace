@@ -30,7 +30,7 @@ const addMoneySchema = z.object({
 });
 
 const requestMoneySchema = z.object({
-    from: z.string().min(1, "Requester ID is required"),
+    to: z.string().min(1, "Requester ID is required"),
     amount: rupeeAmountSchema
 });
 

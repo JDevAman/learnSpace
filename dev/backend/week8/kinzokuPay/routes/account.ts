@@ -26,6 +26,7 @@ accountRouter.post("/transfer", authenticate, async (req, res, next) => {
             throwError("Invalid input data!", 422);
         }
 
+        console.log(transferBody.data);
         const from = req.user.id;
         const { to, amount } = transferBody.data;
 
@@ -168,9 +169,10 @@ accountRouter.get("/balance", authenticate, async (req, res, next) => {
 });
 
 // Add money
-accountRouter.post("/add-money", authenticate, async (req, res, next) => {
+accountRouter.put("/add-money", authenticate, async (req, res, next) => {
     const session = await mongoose.startSession();
     try {
+        console.log(req.body);
         const body = addMoneySchema.safeParse(req.body);
         if (!body.success) {
             console.error("Validation Error:", body.error.format());

@@ -111,8 +111,6 @@ const transactionSchema = new mongoose.Schema({
 });
 
 // Indexes for better query performance
-userSchema.index({ userName: 1 });
-accountSchema.index({ userId: 1 });
 transactionSchema.index({ from: 1 });
 transactionSchema.index({ to: 1 });
 transactionSchema.index({ type: 1, status: 1 });

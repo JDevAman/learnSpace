@@ -69,7 +69,11 @@ userRouter.post("/signin", async (req, res) => {
             return res.status(401).json({ message: "Incorrect password" });
         }
 
-        const token = signjwt({ userName: fetchedDetails.userName });
+        const token = signjwt({
+            id: fetchedDetails._id.toString(),
+            name: fetchedDetails.fullName,            // from virtual
+            email: fetchedDetails.userName            // if treated as email
+        });
 
         res.cookie("token", token, {
             httpOnly: true,
