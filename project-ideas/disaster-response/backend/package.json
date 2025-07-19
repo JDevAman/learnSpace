@@ -1,0 +1,25 @@
+{
+  "name": "safePath",
+  "version": "1.0.0",
+  "description": "Disaster Response Platform",
+  "main": "./src/app.ts",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "devAman",
+  "license": "ISC",
+  "packageManager": "pnpm@10.12.1",
+  "devDependencies": {
+    "@types/node": "^24.0.15",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@types/express": "^5.0.3",
+    "express": "^5.1.0",
+    "ts-node-dev": "^2.0.0"
+  }
+}
