@@ -3,7 +3,6 @@ import config from "../config";
 
 interface UserPayload {
     id: string;
-    phone?: string;
     email?: string;
     name?: string;
 }

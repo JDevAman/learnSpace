@@ -1,6 +1,7 @@
 import express from "express"
 import userRouter from "./user";
 import accountRouter from "./account";
+import authRouter from "./auth"
 
 const mainRouter = express.Router();
 
@@ -9,5 +10,6 @@ mainRouter.get("/", function (req, res) {
 })
 mainRouter.use("/user", userRouter);
 mainRouter.use("/account", accountRouter);
+mainRouter.use("/auth", authRouter);
 
 export default mainRouter;
