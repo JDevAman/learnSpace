@@ -1,29 +1,78 @@
-import { Layout } from "./components/Layout";
-import { Card } from "./components/Card";
+import React from "react";
 import "./App.css";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useNavigate,
+} from "react-router-dom";
+
+import Home from "./pages/home/Home";
+import { SupportPage } from "./pages/support/Support";
+import { DashboardPage } from "./pages/dashboard/Dashboard";
+import { PaymentPage } from "./pages/payment/Payment";
+import { Layout } from "./components/Layout/Layout";
+import { TransactionsPage } from "./pages/transaction/Transaction";
+
+function AppRoutes() {
+  const navigate = useNavigate();
+
+  return (
+    <div className="min-h-screen bg-black">
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/support" element={<SupportPage />} />
+        <Route
+          path="/dashboard"
+          element={
+            <Layout protectedPage>
+              <DashboardPage
+                onNavigate={(route) => navigate(`/${route}`)}
+                onLogout={() => navigate("/")}
+              />
+            </Layout>
+          }
+        />
+        <Route
+          path="/payment"
+          element={
+            <Layout protectedPage>
+              <PaymentPage
+                onNavigate={(route) => navigate(`/${route}`)}
+                onLogout={() => navigate("/")}
+              />
+            </Layout>
+          }
+        />
+        <Route
+          path="/transaction"
+          element={
+            <Layout protectedPage>
+              <TransactionsPage
+                onNavigate={(route) => navigate(`/${route}`)}
+                onLogout={() => navigate("/")}
+              />
+            </Layout>
+          }
+        />
+        <Route
+          path="*"
+          element={
+            <div className="text-white text-center p-10">
+              404 - Page Not Found
+            </div>
+          }
+        />
+      </Routes>
+    </div>
+  );
+}
 
 function App() {
   return (
-    <Layout>
-      <main className="flex items-center justify-center min-h-screen px-4">
-        <Card glowing variant="accent" className="p-8 max-w-md text-center">
-          <h1 className="text-3xl font-bold text-cyan-400 mb-4">
-            Welcome to kinzokuPay
-          </h1>
-          <p className="text-slate-300 text-lg leading-relaxed">
-            Your trusted futuristic payment App.
-          </p>
-          <div className="mt-6 flex justify-center space-x-4">
-            <button className="px-6 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-900 font-semibold rounded-lg transition-colors duration-200">
-              Get Started
-            </button>
-            <button className="px-6 py-2 border border-cyan-400 text-cyan-400 hover:bg-cyan-400 hover:text-slate-900 font-semibold rounded-lg transition-colors duration-200">
-              Learn More
-            </button>
-          </div>
-        </Card>
-      </main>
-    </Layout>
+    <Router>
+      <AppRoutes />
+    </Router>
   );
 }
 
