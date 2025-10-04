@@ -50,7 +50,7 @@ authRouter.get("/google/callback", async (req, res) => {
     const firstName = nameParts[0];
     const lastName = nameParts.slice(1).join(" ") || "";
 
-    console.log('successful');
+    console.log("successful");
     let user = await UserModel.findOne({ userName: email });
 
     if (!user) {
@@ -78,7 +78,19 @@ authRouter.get("/google/callback", async (req, res) => {
       maxAge: 60 * 60 * 1000,
     });
 
-    return res.redirect(`${process.env.FRONTEND_URL}`);
+    res.send(`
+  <html>
+    <body>
+      <script>
+        window.opener.postMessage(
+          { success: true },
+          "${process.env.FRONTEND_URL}"
+        );
+        window.close();
+      </script>
+    </body>
+  </html>
+`);
   } catch (err: any) {
     console.error("Google OAuth Error:", err.response?.data || err.message);
     throwError("Couldn't Sign In!", 401);
@@ -175,7 +187,20 @@ authRouter.get("/github/callback", async (req, res) => {
       maxAge: 60 * 60 * 1000,
     });
 
-    return res.redirect(`${process.env.FRONTEND_URL}`);
+    // Example: after JWT cookie is set
+    res.send(`
+  <html>
+    <body>
+      <script>
+        window.opener.postMessage(
+          { success: true },
+          "${process.env.FRONTEND_URL}"
+        );
+        window.close();
+      </script>
+    </body>
+  </html>
+`);
   } catch (err: any) {
     console.error("GitHub OAuth Error:", err.response?.data || err.message);
     throwError("Couldn't Sign In!", 401);

@@ -15,9 +15,9 @@ interface NavbarProps {
 }
 
 const defaultNavItems: NavItem[] = [
-  { text: "Features", href: "#features" },
-  { text: "Pricing", href: "#pricing" },
-  { text: "Support", href: "#support" },
+  { text: "Features", href: "features" },
+  { text: "Pricing", href: "pricing" },
+  { text: "Support", href: "support" },
 ];
 
 export default function Navbar({

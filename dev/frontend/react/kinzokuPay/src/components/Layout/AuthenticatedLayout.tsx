@@ -4,12 +4,8 @@ import { useState } from "react";
 
 export function AuthenticatedLayout({
   children,
-  onNavigate,
-  onLogout,
 }: {
   children: React.ReactNode;
-  onNavigate: (route: string) => void;
-  onLogout: () => void;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -20,8 +16,6 @@ export function AuthenticatedLayout({
         <Sidebar
           mobileOpen={mobileOpen}
           setMobileOpen={setMobileOpen}
-          onNavigate={onNavigate}
-          onLogout={onLogout}
         />
         <main className="flex-1 lg:ml-64 min-h-screen overflow-auto">
           {children}

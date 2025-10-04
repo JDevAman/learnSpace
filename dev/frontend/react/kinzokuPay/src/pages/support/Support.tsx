@@ -1,5 +1,4 @@
 import { useState } from "react";
-import Navbar from "../../components/Layout/Navbar";
 import { FooterSection } from "../home/FooterSection";
 import { SupportHeroSection } from "./SupportHeroSection";
 import { SupportOptionGrid } from "./SupportOptionGrid";
@@ -84,7 +83,6 @@ export function SupportPage() {
 
   return (
     <div className="min-h-screen bg-black">
-      <Navbar />
       <SupportHeroSection
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}

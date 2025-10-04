@@ -12,21 +12,14 @@ import {
 } from "../../components/Card/Card";
 import { TransactionRow } from "../../components/ui/transaction-row";
 import { Search, Download, TrendingUp, TrendingDown } from "lucide-react";
+import { useAppNavigation } from "../../utils/useAppNavigation";
 
-interface TransactionsPageProps {
-  onNavigate: (page: string) => void;
-  onLogout: () => void;
-}
-
-export function TransactionsPage({
-  onNavigate,
-  onLogout,
-}: TransactionsPageProps) {
+export function TransactionsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState<
     "all" | "sent" | "received" | "pending"
   >("all");
-
+  const { goToPayment } = useAppNavigation();
   const transactions = [
     {
       id: "1",
@@ -122,7 +115,7 @@ export function TransactionsPage({
     .reduce((sum, t) => sum + t.amount, 0);
 
   return (
-    <AuthenticatedLayout onNavigate={onNavigate} onLogout={onLogout}>
+    <AuthenticatedLayout>
       <div className="space-y-8">
         <div>
           <h1 className="text-3xl font-thin text-white mb-2">Transactions</h1>
@@ -271,7 +264,7 @@ export function TransactionsPage({
                     ? "Try adjusting your search terms"
                     : "You haven't made any transactions yet"}
                 </p>
-                <Button variant="glow" onClick={() => onNavigate("payment")}>
+                <Button variant="glow" onClick={goToPayment}>
                   Make Your First Payment
                 </Button>
               </CardContent>

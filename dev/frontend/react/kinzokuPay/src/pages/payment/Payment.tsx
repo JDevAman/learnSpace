@@ -11,9 +11,10 @@ import {
   CardTitle,
 } from "../../components/Card/Card";
 import { Send, Download, Eye, ArrowRight, CheckCircle } from "lucide-react";
-import { PaymentPageProps } from "../../utils/types";
+import { useAppNavigation } from "../../utils/useAppNavigation";
 
-export function PaymentPage({ onNavigate, onLogout }: PaymentPageProps) {
+export function PaymentPage() {
+  const { goToSuccess } = useAppNavigation();
   const [activeTab, setActiveTab] = useState<"pay" | "request" | "balance">(
     "pay"
   );
@@ -29,7 +30,7 @@ export function PaymentPage({ onNavigate, onLogout }: PaymentPageProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onNavigate("success");
+    goToSuccess();
   };
 
   const tabs = [
@@ -40,7 +41,7 @@ export function PaymentPage({ onNavigate, onLogout }: PaymentPageProps) {
 
   const ActiveIcon = tabs.find((tab) => tab.id === activeTab)?.icon;
   return (
-    <AuthenticatedLayout onNavigate={onNavigate} onLogout={onLogout}>
+    <AuthenticatedLayout>
       <div className="space-y-8">
         <div>
           <h1 className="text-3xl font-thin text-white mb-2">Payments</h1>

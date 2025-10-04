@@ -1,16 +1,11 @@
-import { useNavigate } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../../utils/useAuth";
 import Navbar from "./Navbar";
 import { Sidebar } from "./Sidebar";
+import { useAppNavigation } from "../../utils/useAppNavigation";
 
-export function Layout({
-  children,
-  protectedPage = false,
-}: {
-  children: React.ReactNode;
-  protectedPage?: boolean;
-}) {
-  const navigate = useNavigate();
+export function Layout({ protectedPage = false }: { protectedPage?: boolean }) {
+  const { logout } = useAppNavigation();
   let { user, loading } = useAuth();
   user = { id: "abc", name: "aman", email: "aman@123" };
   // Optional: show loader until auth state is known
@@ -34,14 +29,10 @@ export function Layout({
 
     return (
       <div className="flex min-h-screen">
-        <Sidebar
-          onNavigate={(route) => navigate(route)}
-          onLogout={() => {
-            // Add your logout logic here
-            navigate("/");
-          }}
-        />
-        <main className="flex-1">{children}</main>
+        <Sidebar />
+        <main className="flex-1">
+          <Outlet />
+        </main>
       </div>
     );
   }
@@ -50,7 +41,9 @@ export function Layout({
   return (
     <>
       <Navbar />
-      <main>{children}</main>
+      <main>
+        <Outlet />
+      </main>
     </>
   );
 }

@@ -32,25 +32,11 @@ export interface Transaction {
   status: "completed" | "pending" | "failed";
 }
 
-export interface PaymentPageProps {
-  onNavigate: (page: string) => void;
-  onLogout: () => void;
-}
-
-export interface DashboardPageProps {
-  onNavigate: (page: string) => void;
-  onLogout: () => void;
-}
-
 export interface AuthenticatedLayoutProps {
   children: ReactNode;
-  onNavigate: (route: string) => void;
-  onLogout: () => void;
 }
 
 export interface SidebarProps {
   mobileOpen?: boolean;
   setMobileOpen?: (open: boolean) => void;
-  onNavigate: (route: string) => void;
-  onLogout: () => void;
 }
