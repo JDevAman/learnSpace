@@ -1,43 +1,53 @@
-import { Outlet, useNavigate } from "react-router-dom";
-import { useAuth } from "../../utils/useAuth";
+import { Outlet, Navigate } from "react-router-dom";
 import Navbar from "./Navbar";
 import { Sidebar } from "./Sidebar";
-import { useAppNavigation } from "../../utils/useAppNavigation";
+import { MobileNav } from "./MobileNav";
+import { useState } from "react";
+import { cn } from "../../utils/utils";
+import { useAppSelector } from "../../store/hooks";
 
-export function Layout({ protectedPage = false }: { protectedPage?: boolean }) {
-  const { logout } = useAppNavigation();
-  let { user, loading } = useAuth();
-  user = { id: "abc", name: "aman", email: "aman@123" };
-  // Optional: show loader until auth state is known
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-white">
-        Loading...
-      </div>
-    );
+interface LayoutProps {
+  protectedPage?: boolean; // true if page requires login
+}
+
+export function Layout({ protectedPage = false }: LayoutProps) {
+  const user = useAppSelector((state) => state.auth.user);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+
+  // If route is protected but user is not logged in
+  if (protectedPage && !user) {
+    return <Navigate to="/auth" replace />;
   }
 
-  // For protected pages: only allow if user is logged in
-  if (protectedPage) {
-    if (!user) {
-      return (
-        <div className="min-h-screen flex items-center justify-center text-white">
-          You must be logged in to view this page.
-        </div>
-      );
-    }
-
+  // Protected layout: sidebar + mobile nav
+  if (protectedPage && user) {
     return (
-      <div className="flex min-h-screen">
-        <Sidebar />
-        <main className="flex-1">
+      <div className="min-h-screen bg-black">
+        <div className="lg:hidden">
+          <MobileNav onMenuClick={() => setMobileOpen(true)} />
+        </div>
+
+        <Sidebar
+          mobileOpen={mobileOpen}
+          setMobileOpen={setMobileOpen}
+          collapsed={collapsed}
+          setCollapsed={setCollapsed}
+        />
+
+        <main
+          className={cn(
+            "flex-1 min-h-screen overflow-auto transition-all duration-300",
+            collapsed ? "lg:ml-16" : "lg:ml-64"
+          )}
+        >
           <Outlet />
         </main>
       </div>
     );
   }
 
-  // Public pages: show Navbar
+  // Public layout: navbar only
   return (
     <>
       <Navbar />

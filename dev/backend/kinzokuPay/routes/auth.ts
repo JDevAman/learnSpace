@@ -6,6 +6,11 @@ import throwError from "../utils/error";
 
 const authRouter = express.Router();
 
+function parseName(name: string) {
+  const parts = (name || "User").split(" ");
+  return { firstName: parts[0], lastName: parts.slice(1).join(" ") || "" };
+}
+
 // Google OAuth Redirect
 authRouter.get("/google", (req, res) => {
   const redirectURI =
@@ -46,9 +51,7 @@ authRouter.get("/google/callback", async (req, res) => {
     );
 
     const { email, name, picture } = userInfo.data;
-    const nameParts = (name || "User").split(" ");
-    const firstName = nameParts[0];
-    const lastName = nameParts.slice(1).join(" ") || "";
+    const { firstName, lastName } = parseName(name);
 
     console.log("successful");
     let user = await UserModel.findOne({ userName: email });
@@ -67,7 +70,9 @@ authRouter.get("/google/callback", async (req, res) => {
     const token = signjwt({
       id: user._id.toString(),
       email: user.userName,
-      name,
+      firstName,
+      lastName,
+      avatar: picture,
     });
 
     res.cookie("token", token, {
@@ -156,9 +161,7 @@ authRouter.get("/github/callback", async (req, res) => {
       throwError("No email found from GitHub", 401);
     }
 
-    const nameParts = (name || "User").split(" ");
-    const firstName = nameParts[0];
-    const lastName = nameParts.slice(1).join(" ") || "";
+    const { firstName, lastName } = parseName(name);
 
     let user = await UserModel.findOne({ userName: email });
 
@@ -176,7 +179,9 @@ authRouter.get("/github/callback", async (req, res) => {
     const token = signjwt({
       id: user._id.toString(),
       email: user.userName,
-      name,
+      firstName,
+      lastName,
+      avatar: avatar_url,
     });
 
     res.cookie("token", token, {

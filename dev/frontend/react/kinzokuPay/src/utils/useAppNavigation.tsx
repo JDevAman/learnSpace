@@ -4,12 +4,14 @@ export function useAppNavigation() {
 
   return {
     goHome: () => navigate("/"),
+    goToProfile: () => navigate("/profile"),
     goToSignIn: () => navigate("/auth/signin"),
     goToSignUp: () => navigate("/auth/signup"),
     goToForgotPassword: () => navigate("/auth/forgot-password"),
     goToDashboard: () => navigate("/dashboard"),
     goToPayment: () => navigate("/payment"),
     goToTransactions: () => navigate("/transaction"),
+    goToTransactionDetails: (id: string) => navigate(`/transactions/${id}`),
     goToSuccess: () => navigate("/success"),
     goToFeatures: () => navigate("/features"),
     goToAbout: () => navigate("/about"),

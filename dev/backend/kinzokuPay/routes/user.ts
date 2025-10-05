@@ -17,35 +17,32 @@ const userRouter = express.Router();
 userRouter.post("/signup", async (req, res) => {
   try {
     const signUpBody = userSignUpSchema.safeParse(req.body);
-    if (!signUpBody.success) {
+    if (!signUpBody.success)
       return res.status(422).json({ message: "Invalid input data!" });
-    }
 
-    const parsedObj = signUpBody.data;
+    const { firstName, lastName, userName, password } = signUpBody.data;
 
-    const existingUser = await UserModel.findOne({
-      userName: parsedObj.userName,
-    });
-    if (existingUser) {
+    const existingUser = await UserModel.findOne({ userName });
+    if (existingUser)
       return res.status(409).json({ message: "User already exists!" });
-    }
-    const hashedPw = await argon2.hash(parsedObj.password + config.pepper);
 
+    const hashedPw = await argon2.hash(password + config.pepper);
     const user = await UserModel.create({
-      ...parsedObj,
+      firstName,
+      lastName,
+      userName,
       password: hashedPw,
     });
 
-    const userId = user._id;
-    const existingAccount = await AccountModel.findOne({ userId });
-    if (!existingAccount) {
-      await AccountModel.create({ userId, balance: 0 });
-    }
+    const existingAccount = await AccountModel.findOne({ userId: user._id });
+    if (!existingAccount)
+      await AccountModel.create({ userId: user._id, balance: 0 });
 
     const token = signjwt({
       id: user._id.toString(),
-      name: user.fullName,
-      email: user.userName,
+      firstName,
+      lastName,
+      email: userName,
     });
 
     res.cookie("token", token, {
@@ -58,15 +55,11 @@ userRouter.post("/signup", async (req, res) => {
 
     return res.status(201).json({
       message: "User successfully created",
-      user: {
-        id: user._id.toString(),
-        name: user.fullName,
-        email: user.userName,
-      },
+      user: { id: user._id.toString(), firstName, lastName, email: userName },
     });
   } catch (err) {
     console.error(err);
-    throwError("Couldn't Sign Up!", 409);
+    throwError("Couldn't Sign Up!", 500);
   }
 });
 
@@ -74,32 +67,26 @@ userRouter.post("/signup", async (req, res) => {
 userRouter.post("/signin", async (req, res) => {
   try {
     const signInBody = userSignInSchema.safeParse(req.body);
-    if (!signInBody.success) {
+    if (!signInBody.success)
       return res.status(422).json({ message: "Invalid credentials!" });
-    }
 
-    const parsedObj = signInBody.data;
-    const fetchedDetails = await UserModel.findOne({
-      userName: parsedObj.userName,
-    });
-
-    if (!fetchedDetails) {
+    const { userName, password } = signInBody.data;
+    const fetchedUser = await UserModel.findOne({ userName });
+    if (!fetchedUser)
       return res.status(401).json({ message: "User not found" });
-    }
 
-    const passwordCompare = await argon2.verify(
-      fetchedDetails.password,
-      parsedObj.password + config.pepper
+    const isValid = await argon2.verify(
+      fetchedUser.password,
+      password + config.pepper
     );
-
-    if (!passwordCompare) {
+    if (!isValid)
       return res.status(401).json({ message: "Incorrect password" });
-    }
 
     const token = signjwt({
-      id: fetchedDetails._id.toString(),
-      name: fetchedDetails.fullName, // from virtual
-      email: fetchedDetails.userName, // if treated as email
+      id: fetchedUser._id.toString(),
+      firstName: fetchedUser.firstName,
+      lastName: fetchedUser.lastName,
+      email: fetchedUser.userName,
     });
 
     res.cookie("token", token, {
@@ -113,14 +100,15 @@ userRouter.post("/signin", async (req, res) => {
     return res.status(200).json({
       message: "Successfully logged in!",
       user: {
-        id: fetchedDetails._id.toString(),
-        name: fetchedDetails.fullName,
-        email: fetchedDetails.userName,
+        id: fetchedUser._id.toString(),
+        firstName: fetchedUser.firstName,
+        lastName: fetchedUser.lastName,
+        email: fetchedUser.userName,
       },
     });
   } catch (err) {
     console.error(err);
-    throwError("Couldn't Sign In!", 409);
+    throwError("Couldn't Sign In!", 500);
   }
 });
 
@@ -130,10 +118,8 @@ userRouter.use(authenticate);
 // ✅ Search users
 userRouter.get("/bulk", async (req, res) => {
   const filterParams = req.query.filter as string;
-
-  if (!filterParams) {
+  if (!filterParams)
     return res.status(400).json({ message: "Missing filter param" });
-  }
 
   const users = await UserModel.find({
     $or: [
@@ -147,18 +133,44 @@ userRouter.get("/bulk", async (req, res) => {
 
 // ✅ Update user profile
 userRouter.put("/update-profile", async (req, res) => {
-  const updateUserBody = updateUserSchema.safeParse(req.body);
-
-  if (!updateUserBody.success) {
+  const updateBody = updateUserSchema.safeParse(req.body);
+  if (!updateBody.success)
     return res.status(422).json({ message: "Invalid profile data" });
+
+  const { firstName, lastName, email, password } = updateBody.data;
+  const currentUser = (req as any).user;
+
+  // Check if email is changing and already exists
+  if (email && email !== currentUser.email) {
+    const emailExists = await UserModel.findOne({ userName: email });
+    if (emailExists)
+      return res.status(409).json({ message: "Email already in use" });
   }
 
-  const updatedDetails = updateUserBody.data;
+  const updatedFields: any = {};
+  if (firstName) updatedFields.firstName = firstName;
+  if (lastName) updatedFields.lastName = lastName;
+  if (email) updatedFields.userName = email;
+  if (password)
+    updatedFields.password = await argon2.hash(password + config.pepper);
 
-  await UserModel.updateOne(
-    { userName: (req as any).user.userName },
-    { $set: updatedDetails }
-  );
+  await UserModel.updateOne({ _id: currentUser.id }, { $set: updatedFields });
+
+  // Issue new token if email or name changed
+  const token = signjwt({
+    id: currentUser.id,
+    firstName: updatedFields.firstName ?? currentUser.firstName,
+    lastName: updatedFields.lastName ?? currentUser.lastName,
+    email: updatedFields.userName ?? currentUser.email,
+  });
+
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "Strict",
+    path: "/",
+    maxAge: 60 * 60 * 1000,
+  });
 
   return res.status(200).json({ message: "User profile updated" });
 });
@@ -169,18 +181,17 @@ userRouter.post("/logout", async (req, res) => {
   return res.json({ message: "Logged out" });
 });
 
-// User Details
+// ✅ Current user
 userRouter.get("/me", (req, res) => {
-  const user = req.user;
-  if (!user) {
-    return res.status(401).json({ message: "Not logged in" });
-  }
-
+  const user = (req as any).user;
+  if (!user) return res.status(401).json({ message: "Not logged in" });
   return res.status(200).json({
     user: {
       id: user.id,
-      name: user.name,
+      firstName: user.firstName,
+      lastName: user.lastName,
       email: user.email,
+      avatar: user.avatar
     },
   });
 });

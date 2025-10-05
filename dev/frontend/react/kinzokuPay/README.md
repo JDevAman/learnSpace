@@ -182,3 +182,39 @@ Queries:
 - How to send mail?
 - Why need toast in provider?
 - How and why rbac
+
+
+
+RBAC:
+
+## **Roles & Permissions**
+
+| Role           | Permissions / Access                                                              |
+| -------------- | --------------------------------------------------------------------------------- |
+| **User**       | View own transactions, make payments, request money, dashboard, profile           |
+| **Admin**      | All User permissions + refund/update transactions, manage content, view analytics |
+| **SuperAdmin** | All Admin permissions + create admins, manage platform settings, assign roles     |
+
+---
+
+## **Pages by Role**
+
+| Page/Feature                 | User | Admin | SuperAdmin |
+| ---------------------------- | ---- | ----- | ---------- |
+| Dashboard                    | ✅    | ✅     | ✅          |
+| Transactions                 | ✅    | ✅     | ✅          |
+| Transaction Details          | ✅    | ✅     | ✅          |
+| Payment / Request Money      | ✅    | ❌     | ❌          |
+| Refund / Reverse Transaction | ❌    | ✅     | ✅          |
+| Analytics / Stats            | ❌    | ✅     | ✅          |
+| User / Admin Management      | ❌    | ❌     | ✅          |
+| Platform Settings            | ❌    | ❌     | ✅          |
+
+---
+
+## **Implementation Tips**
+
+* Store role in Redux: `user.role = "user" | "admin" | "superadmin"`
+* Route guarding: show/hide pages based on role
+* Conditional UI: buttons/actions based on role
+* Backend must enforce permissions for security
