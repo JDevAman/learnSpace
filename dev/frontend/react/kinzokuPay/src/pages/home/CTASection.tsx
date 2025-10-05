@@ -3,7 +3,7 @@ import { useAppNavigation } from "../../utils/useAppNavigation";
 
 export function CTASection() {
   4;
-  const { goToSignUp } = useAppNavigation();
+  const { goToSignUp, goToAbout } = useAppNavigation();
   return (
     <section className="py-20 px-4">
       <div className="max-w-4xl mx-auto text-center">
@@ -17,7 +17,7 @@ export function CTASection() {
           <Button variant="glow" size="lg" onClick={goToSignUp}>
             Create Your Account
           </Button>
-          <Button variant="outline" size="lg">
+          <Button variant="outline" size="lg" onClick={goToAbout}>
             Learn More
           </Button>
         </div>

@@ -11,6 +11,8 @@ import { NotFoundPage } from "./pages/NotFoundPage";
 import { AuthPage } from "./pages/auth/auth";
 import { ForgotPasswordPage } from "./pages/auth/forgotPassword";
 import { ReduxToast } from "./components/ui/toast";
+import { AboutPage } from "./pages/about/about";
+import { FeaturesPage } from "./pages/features/features";
 
 function AppRoutes() {
   return (
@@ -24,6 +26,8 @@ function AppRoutes() {
             path="/auth/forgot-password"
             element={<ForgotPasswordPage />}
           />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/features" element={<FeaturesPage />} />
           <Route path="/support" element={<SupportPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>

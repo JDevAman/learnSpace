@@ -68,7 +68,14 @@ export function HeroSection() {
             <Button variant="glow" size="lg" onClick={goToSignUp}>
               Create Free Account
             </Button>
-            <Button variant="outline" size="lg">
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => {
+                const el = document.getElementById("testimonials");
+                if (el) el.scrollIntoView({ behavior: "smooth" });
+              }}
+            >
               See Testimonials
             </Button>
           </div>

@@ -1,4 +1,4 @@
-import { FooterSection } from "./FooterSection";
+import { FooterSection } from "../../components/Layout/FooterSection";
 import { CTASection } from "./CTASection";
 import { TestimonialsSection } from "./TestimonialSection";
 import { FeatureSection } from "./FeatureSection";
@@ -10,7 +10,7 @@ const Home = () => {
       <HeroSection />
       <FeatureSection />
       <TestimonialsSection />
-      <CTASection/>
+      <CTASection />
       <FooterSection />
     </div>
   );
