@@ -11,6 +11,7 @@ export function useAppNavigation() {
     goToTransactions: () => navigate("/transaction"),
     goToSuccess: () => navigate("/success"),
     goToSupport: () => navigate("/support"),
+    goToForgotPassword: () => navigate("/auth/forgot-password"),
     logout: () => navigate("/"),
   };
 }

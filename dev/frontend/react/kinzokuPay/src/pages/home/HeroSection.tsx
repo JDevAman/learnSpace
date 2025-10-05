@@ -3,9 +3,52 @@ import { AuthCard } from "../../components/Card/AuthCard";
 import { InputField } from "../../components/Form/InputField";
 import { Github } from "lucide-react";
 import { useAppNavigation } from "../../utils/useAppNavigation";
+import { GoogleIcon } from "../../components/icons/GoogleIcon";
+import { useOAuth } from "../../utils/useOAuth";
+import { useState } from "react";
+import { useAppDispatch } from "../../store/hooks";
+import { setSignupEmail } from "../../store/slices/authSlice";
+import { regex } from "../../../shared/userValidator";
 
 export function HeroSection() {
-  const {goToSignUp} = useAppNavigation();
+  const dispatch = useAppDispatch();
+  const { goToSignUp } = useAppNavigation();
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const { handleOAuth } = useOAuth(backendUrl);
+
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
+
+  const emailRegex = regex.email;
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.trim();
+    setEmail(value);
+
+    if (value.length === 0) {
+      setError("");
+      return;
+    }
+
+    if (!emailRegex.test(value)) {
+      setError("Please enter a valid email address");
+    } else {
+      setError("");
+    }
+  };
+
+  const handleGetStarted = () => {
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+    setError("");
+    dispatch(setSignupEmail(email));
+    goToSignUp();
+  };
+
+  const isValidEmail = emailRegex.test(email);
+
   return (
     <section className="relative pt-32 pb-20 px-4">
       <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
@@ -30,13 +73,26 @@ export function HeroSection() {
             </Button>
           </div>
         </div>
+
         <div className="lg:pl-12">
           <AuthCard title="Quick Sign Up" subtitle="Get started in seconds">
             <div className="space-y-4">
-              <InputField type="email" placeholder="Enter your email" />
-              <Button variant="glow" className="w-full">
+              <InputField
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={handleEmailChange}
+                error={error}
+              />
+              <Button
+                variant={isValidEmail ? "glow" : "default"}
+                className="w-full"
+                onClick={handleGetStarted}
+                disabled={!isValidEmail}
+              >
                 Get Started
               </Button>
+
               <div className="relative">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-slate-700" />
@@ -47,14 +103,21 @@ export function HeroSection() {
                   </span>
                 </div>
               </div>
+
               <div className="grid grid-cols-2 gap-3">
-                <Button variant="outline" className="w-full bg-transparent">
-                  <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
-                    {/* Google SVG paths */}
-                  </svg>
+                <Button
+                  variant="outline"
+                  className="w-full bg-transparent"
+                  onClick={() => handleOAuth("google")}
+                >
+                  <GoogleIcon className="w-5 h-5 mr-2" />
                   Google
                 </Button>
-                <Button variant="outline" className="w-full bg-transparent">
+                <Button
+                  variant="outline"
+                  className="w-full bg-transparent"
+                  onClick={() => handleOAuth("github")}
+                >
                   <Github className="w-5 h-5 mr-2" /> GitHub
                 </Button>
               </div>

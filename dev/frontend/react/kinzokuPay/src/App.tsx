@@ -1,10 +1,5 @@
 import "./App.css";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  useNavigate,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import Home from "./pages/home/Home";
 import { SupportPage } from "./pages/support/Support";
@@ -14,19 +9,25 @@ import { Layout } from "./components/Layout/Layout";
 import { TransactionsPage } from "./pages/transaction/Transaction";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { AuthPage } from "./pages/auth/auth";
+import { ForgotPasswordPage } from "./pages/auth/forgotPassword";
+import { ReduxToast } from "./components/ui/toast";
 
 function AppRoutes() {
-
   return (
     <div className="min-h-screen bg-black">
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
           <Route path="/auth/*" element={<AuthPage />} />
+
+          <Route
+            path="/auth/forgot-password"
+            element={<ForgotPasswordPage />}
+          />
           <Route path="/support" element={<SupportPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
-        
+
         {/* Protected Routes */}
         <Route element={<Layout protectedPage />}>
           <Route path="payment" element={<PaymentPage />} />
@@ -45,6 +46,7 @@ function App() {
   return (
     <Router>
       <AppRoutes />
+      <ReduxToast />
     </Router>
   );
 }

@@ -178,3 +178,7 @@ Queries:
 - Why clsx and cn?
 - RTK, backend, etc
 - OAuth - window.location,href?
+- Memo and callback on Auth Page
+- How to send mail?
+- Why need toast in provider?
+- How and why rbac

@@ -1,30 +1,33 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-interface AuthState {
-  user: { id: string; name: string; email: string } | null;
-  token?: string;
+export interface Toast {
+  id: string;
+  title: string;
+  description?: string;
+  variant?: "default" | "destructive";
 }
 
-const initialState: AuthState = {
-  user: null,
+interface UIState {
+  toasts: Toast[];
+}
+
+const initialState: UIState = {
+  toasts: [],
 };
 
 const uiSlice = createSlice({
-  name: "auth",
+  name: "ui",
   initialState,
   reducers: {
-    setUser: (state, action: PayloadAction<AuthState["user"]>) => {
-      state.user = action.payload;
+    addToast: (state, action: PayloadAction<Omit<Toast, "id">>) => {
+      const id = Date.now().toString();
+      state.toasts.push({ ...action.payload, id });
     },
-    setToken: (state, action: PayloadAction<string>) => {
-      state.token = action.payload;
-    },
-    logout: (state) => {
-      state.user = null;
-      state.token = undefined;
+    removeToast: (state, action: PayloadAction<string>) => {
+      state.toasts = state.toasts.filter((t) => t.id !== action.payload);
     },
   },
 });
 
-export const { setUser, setToken, logout } = uiSlice.actions;
+export const { addToast, removeToast } = uiSlice.actions;
 export default uiSlice.reducer;

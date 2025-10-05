@@ -2,41 +2,166 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { Button } from "../../components/Button/Button";
 import { InputField } from "../../components/Form/InputField";
 import { AuthCard } from "../../components/Card/AuthCard";
-import { Github, ChromeIcon } from "lucide-react";
+import { Github } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { useAppNavigation } from "../../utils/useAppNavigation";
-import { useAppDispatch } from "../../store/hooks";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { setUser } from "../../store/slices/authSlice";
 import { TabButton } from "../../components/Button/TabButton";
 import { api } from "../../utils/api";
-import { openOAuthPopup } from "../../utils/oauthPopup";
+import { useOAuth } from "../../utils/useOAuth";
+import { GoogleIcon } from "../../components/icons/GoogleIcon";
+import { regex } from "../../../shared/userValidator";
 
 type Tab = "signin" | "signup";
 
 export function AuthPage() {
-  const { goToDashboard, goToSignIn, goToSignUp, goHome } = useAppNavigation();
+  const { goToDashboard, goToSignIn, goToSignUp, goToForgotPassword } =
+    useAppNavigation();
   const { pathname } = useLocation();
-  const [activeTab, setActiveTab] = useState<Tab>("signin");
   const dispatch = useAppDispatch();
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const { handleOAuth } = useOAuth(backendUrl);
+  const signupEmail = useAppSelector((state) => state.auth.signupEmail);
 
-  // Separate state per input to reduce unnecessary re-renders
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-
+  // ---------------- State ----------------
+  const [activeTab, setActiveTab] = useState<Tab>("signin");
+  const [formData, setFormData] = useState({
+    email: signupEmail || "",
+    password: "",
+    confirmPassword: "",
+    firstName: "",
+    lastName: "",
+  });
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [fieldValid, setFieldValid] = useState({
+    email: false,
+    password: false,
+    confirmPassword: false,
+    firstName: false,
+    lastName: false,
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Update active tab based on URL
+  // ---------------- Active tab from URL ----------------
   useEffect(() => {
-    const tab: Tab = pathname.includes("signup") ? "signup" : "signin";
-    setActiveTab(tab);
+    setActiveTab(pathname.includes("signup") ? "signup" : "signin");
   }, [pathname]);
 
-  // Memoized tab click handler
+  // ---------------- Field change handlers ----------------
+  const handleFieldChange =
+    (field: keyof typeof formData) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value.trim();
+      setFormData((prev) => ({ ...prev, [field]: value }));
+
+      // Validation logic
+      switch (field) {
+        case "email":
+          if (!value) {
+            setFieldErrors((prev) => ({ ...prev, email: "" }));
+            setFieldValid((prev) => ({ ...prev, email: false }));
+          } else if (regex.email.test(value)) {
+            setFieldErrors((prev) => ({ ...prev, email: "" }));
+            setFieldValid((prev) => ({ ...prev, email: true }));
+          } else {
+            setFieldErrors((prev) => ({
+              ...prev,
+              email: "Invalid email address",
+            }));
+            setFieldValid((prev) => ({ ...prev, email: false }));
+          }
+          break;
+
+        case "password":
+          if (!value) {
+            setFieldErrors((prev) => ({ ...prev, password: "" }));
+            setFieldValid((prev) => ({ ...prev, password: false }));
+          } else if (regex.password.test(value)) {
+            setFieldErrors((prev) => ({ ...prev, password: "" }));
+            setFieldValid((prev) => ({ ...prev, password: true }));
+          } else {
+            setFieldErrors((prev) => ({
+              ...prev,
+              password: "Password must be 6+ chars, include letters & numbers",
+            }));
+            setFieldValid((prev) => ({ ...prev, password: false }));
+          }
+
+          // Check confirm password match if in signup
+          if (activeTab === "signup") {
+            if (
+              formData.confirmPassword &&
+              formData.confirmPassword !== value
+            ) {
+              setFieldErrors((prev) => ({
+                ...prev,
+                confirmPassword: "Passwords do not match",
+              }));
+              setFieldValid((prev) => ({ ...prev, confirmPassword: false }));
+            } else if (formData.confirmPassword === value) {
+              setFieldErrors((prev) => ({ ...prev, confirmPassword: "" }));
+              setFieldValid((prev) => ({ ...prev, confirmPassword: true }));
+            }
+          }
+          break;
+
+        case "confirmPassword":
+          if (!value) {
+            setFieldErrors((prev) => ({ ...prev, confirmPassword: "" }));
+            setFieldValid((prev) => ({ ...prev, confirmPassword: false }));
+          } else if (value === formData.password) {
+            setFieldErrors((prev) => ({ ...prev, confirmPassword: "" }));
+            setFieldValid((prev) => ({ ...prev, confirmPassword: true }));
+          } else {
+            setFieldErrors((prev) => ({
+              ...prev,
+              confirmPassword: "Passwords do not match",
+            }));
+            setFieldValid((prev) => ({ ...prev, confirmPassword: false }));
+          }
+          break;
+
+        case "firstName":
+          if (value.length >= 2 && value.length <= 20) {
+            setFieldErrors((prev) => ({ ...prev, firstName: "" }));
+            setFieldValid((prev) => ({ ...prev, firstName: true }));
+          } else {
+            setFieldErrors((prev) => ({
+              ...prev,
+              firstName: "First name required with 2 - 20 chars",
+            }));
+            setFieldValid((prev) => ({ ...prev, firstName: false }));
+          }
+          break;
+
+        case "lastName":
+          if (value.length >= 2 && value.length <= 20) {
+            setFieldErrors((prev) => ({ ...prev, lastName: "" }));
+            setFieldValid((prev) => ({ ...prev, lastName: true }));
+          } else {
+            setFieldErrors((prev) => ({
+              ...prev,
+              lastName: "Last name required with 2 - 20 chars",
+            }));
+            setFieldValid((prev) => ({ ...prev, lastName: false }));
+          }
+          break;
+      }
+    };
+
+  // ---------------- Form validity ----------------
+  const isFormValid =
+    activeTab === "signin"
+      ? fieldValid.email && fieldValid.password
+      : fieldValid.email &&
+        fieldValid.password &&
+        fieldValid.confirmPassword &&
+        fieldValid.firstName &&
+        fieldValid.lastName;
+
+  // ---------------- Tab & Submit handlers ----------------
   const handleTabClick = useCallback(
     (tab: Tab) => {
       if (tab === activeTab) return;
@@ -46,21 +171,22 @@ export function AuthPage() {
     [activeTab, goToSignIn, goToSignUp]
   );
 
-  // Memoized submit handler
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
+      if (!isFormValid) return;
+
       setError("");
       setLoading(true);
 
       try {
         const res = await api.post(`/api/v1/user/${activeTab}`, {
-          userName: email,
-          password,
+          userName: formData.email,
+          password: formData.password,
           ...(activeTab === "signup" && {
-            firstName,
-            lastName,
-            confirmPassword,
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            confirmPassword: formData.confirmPassword,
           }),
         });
         dispatch(setUser(res.data.user));
@@ -71,19 +197,10 @@ export function AuthPage() {
         setLoading(false);
       }
     },
-    [
-      activeTab,
-      email,
-      password,
-      firstName,
-      lastName,
-      confirmPassword,
-      dispatch,
-      goToDashboard,
-    ]
+    [activeTab, formData, dispatch, goToDashboard, isFormValid]
   );
 
-  // Memoized card titles to avoid new objects each render
+  // ---------------- Card titles ----------------
   const cardTitle = useMemo(
     () => (activeTab === "signin" ? "Welcome Back" : "Create Account"),
     [activeTab]
@@ -94,19 +211,6 @@ export function AuthPage() {
         ? "Sign in to your account"
         : "Join KinzokuPay today",
     [activeTab]
-  );
-
-  // Memoized OAuth handlers
-  const handleOAuth = useCallback(
-    (provider: "google" | "github") => {
-      const url = `${backendUrl}/api/v1/auth/${provider}`;
-      openOAuthPopup(url, async () => {
-        const res = await api.get("/api/v1/user/me");
-        dispatch(setUser(res.data.user));
-        goToDashboard();
-      });
-    },
-    [backendUrl, dispatch, goToDashboard]
   );
 
   return (
@@ -135,17 +239,17 @@ export function AuthPage() {
                   type="text"
                   label="First Name"
                   placeholder="John"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  required
+                  value={formData.firstName}
+                  onChange={handleFieldChange("firstName")}
+                  error={fieldErrors.firstName}
                 />
                 <InputField
                   type="text"
                   label="Last Name"
                   placeholder="Doe"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  required
+                  value={formData.lastName}
+                  onChange={handleFieldChange("lastName")}
+                  error={fieldErrors.lastName}
                 />
               </div>
             )}
@@ -154,26 +258,26 @@ export function AuthPage() {
               type="email"
               label="Email"
               placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
+              value={formData.email}
+              onChange={handleFieldChange("email")}
+              error={fieldErrors.email}
             />
             <InputField
               type="password"
               label="Password"
               placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
+              value={formData.password}
+              onChange={handleFieldChange("password")}
+              error={fieldErrors.password}
             />
             {activeTab === "signup" && (
               <InputField
                 type="password"
                 label="Confirm Password"
                 placeholder="Confirm your password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
+                value={formData.confirmPassword}
+                onChange={handleFieldChange("confirmPassword")}
+                error={fieldErrors.confirmPassword}
               />
             )}
 
@@ -181,9 +285,9 @@ export function AuthPage() {
 
             <Button
               type="submit"
-              variant="glow"
+              variant={isFormValid ? "glow" : "default"}
               className="w-full"
-              disabled={loading}
+              disabled={!isFormValid || loading}
             >
               {loading
                 ? "Please wait..."
@@ -203,6 +307,7 @@ export function AuthPage() {
                 </span>
               </div>
             </div>
+
             <div className="grid grid-cols-2 gap-3">
               <Button
                 type="button"
@@ -210,7 +315,8 @@ export function AuthPage() {
                 className="w-full bg-transparent"
                 onClick={() => handleOAuth("google")}
               >
-                <ChromeIcon className="w-5 h-5 mr-2" /> Google
+                <GoogleIcon className="w-5 h-5 mr-2" />
+                Google
               </Button>
               <Button
                 type="button"
@@ -225,7 +331,7 @@ export function AuthPage() {
             <div className="text-center">
               <button
                 type="button"
-                onClick={goHome}
+                onClick={goToForgotPassword}
                 className="text-slate-400 hover:text-white text-sm transition-colors"
               >
                 Forgot Password ?
