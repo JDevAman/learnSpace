@@ -2,7 +2,7 @@ import { CreditCard, Globe, Shield, Zap } from "lucide-react";
 import { FeatureCard } from "../../components/Card/FeatureCard";
 
 export const FeatureSection = () => (
-  <section className="py-20 px-4">
+  <section id="features" className="py-20 px-4">
     <div className="max-w-7xl mx-auto">
       <div className="text-center mb-16">
         <h2 className="text-4xl font-thin text-white mb-4">

@@ -8,15 +8,15 @@ import { CheckCircle } from "lucide-react";
 
 interface Status {
   service: string;
-  status: "operational" | "maintenance" | "down";
+  status: "operational" | "maintenance" | "down" | "planned";
   uptime: string;
 }
 
 const systemStatus: Status[] = [
   { service: "Payment Processing", status: "operational", uptime: "99.9%" },
-  { service: "API", status: "operational", uptime: "99.8%" },
   { service: "Dashboard", status: "operational", uptime: "99.9%" },
-  { service: "Mobile App", status: "maintenance", uptime: "99.7%" },
+  { service: "API", status: "planned", uptime: "99.8%" },
+  { service: "Mobile App", status: "planned", uptime: "99.7%" },
 ];
 
 export const SupportSystemStatus = () => (
@@ -44,7 +44,7 @@ export const SupportSystemStatus = () => (
                   className={`w-3 h-3 rounded-full mr-3 ${
                     service.status === "operational"
                       ? "bg-green-400"
-                      : service.status === "maintenance"
+                      : service.status === "maintenance"  
                       ? "bg-yellow-400"
                       : "bg-red-400"
                   }`}

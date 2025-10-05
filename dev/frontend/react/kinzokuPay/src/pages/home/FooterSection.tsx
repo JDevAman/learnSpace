@@ -16,16 +16,6 @@ export const FooterSection = () => (
                 Features
               </a>
             </li>
-            <li>
-              <a href="#" className="hover:text-white transition-colors">
-                Pricing
-              </a>
-            </li>
-            <li>
-              <a href="#" className="hover:text-white transition-colors">
-                Security
-              </a>
-            </li>
           </ul>
         </div>
         <div>
@@ -36,16 +26,6 @@ export const FooterSection = () => (
                 About
               </a>
             </li>
-            <li>
-              <a href="#" className="hover:text-white transition-colors">
-                Careers
-              </a>
-            </li>
-            <li>
-              <a href="#" className="hover:text-white transition-colors">
-                Contact
-              </a>
-            </li>
           </ul>
         </div>
         <div>
@@ -54,16 +34,6 @@ export const FooterSection = () => (
             <li>
               <a href="#" className="hover:text-white transition-colors">
                 Help Center
-              </a>
-            </li>
-            <li>
-              <a href="#" className="hover:text-white transition-colors">
-                Documentation
-              </a>
-            </li>
-            <li>
-              <a href="#" className="hover:text-white transition-colors">
-                Status
               </a>
             </li>
           </ul>

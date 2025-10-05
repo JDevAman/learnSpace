@@ -22,7 +22,7 @@ const testimonials = [
 ]
 
 export const TestimonialsSection = () => (
-  <section className="py-20 px-4 bg-slate-900/20">
+  <section id="testimonials" className="py-20 px-4 bg-slate-900/20">
     <div className="max-w-7xl mx-auto">
       <div className="text-center mb-16">
         <h2 className="text-4xl font-thin text-white mb-4">Trusted by Millions</h2>

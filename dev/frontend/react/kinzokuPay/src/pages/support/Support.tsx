@@ -3,20 +3,19 @@ import { FooterSection } from "../home/FooterSection";
 import { SupportHeroSection } from "./SupportHeroSection";
 import { SupportOptionGrid } from "./SupportOptionGrid";
 import { FAQSection } from "./FAQSection";
-import { SupportSystemStatus } from "./SystemStatus";
-import { SupportContactForm } from "./ContactForm";
 
 import {
   Zap,
   HelpCircle,
   CheckCircle,
-  Book,
   MessageCircle,
   Mail,
   Phone,
+  Book,
 } from "lucide-react";
-
 import type { FAQ, Category, SupportOption } from "../../utils/types";
+import { SupportContactForm } from "./ContactForm";
+import { SupportSystemStatus } from "./SystemStatus";
 
 export function SupportPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -35,15 +34,14 @@ export function SupportPage() {
     },
     {
       category: "billing",
-      question: "Can I cancel my subscription?",
-      answer:
-        "Yes. Cancel anytime — your account stays active till end of billing period.",
+      question: "Can I cancel a payment or request?",
+      answer: "Payments are final once processed. Double-check before sending.",
     },
     {
       category: "technical",
-      question: "What languages does your API support?",
+      question: "When will MFA feature arrive?",
       answer:
-        "Official SDKs for JS/Node, Python, Go, PHP, and more via REST API.",
+        "It is under planned",
     },
   ];
 
@@ -58,8 +56,8 @@ export function SupportPage() {
     {
       icon: MessageCircle,
       title: "Live Chat",
-      description: "Get instant help from our support team",
-      availability: "24/7 for Premium & Enterprise",
+      description: "Get instant help from our chatbot",
+      availability: "Available 24/7",
       action: "Start Chat",
       color: "text-green-400",
     },
