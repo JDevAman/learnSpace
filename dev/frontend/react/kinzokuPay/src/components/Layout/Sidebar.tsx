@@ -33,6 +33,7 @@ export function Sidebar({
   const isMobile = useIsMobile();
 
   const reduxUser = useSelector((state: RootState) => state.auth.user);
+  const fullName = reduxUser.firstName + " " + reduxUser.lastName;
   const { goToDashboard, goToPayment, goToTransactions, goToProfile, logout } =
     useAppNavigation();
 
@@ -41,11 +42,6 @@ export function Sidebar({
     { name: "Payment", onClick: goToPayment, icon: CreditCard },
     { name: "Transactions", onClick: goToTransactions, icon: History },
   ];
-
-  // Add Profile nav item only on mobile
-  const mobileNavigation = isMobile
-    ? [...navigation, { name: "Profile", onClick: goToProfile, icon: User }]
-    : navigation;
 
   const handleNavClick = (onClick?: () => void) => {
     if (onClick) onClick();
@@ -158,7 +154,7 @@ export function Sidebar({
             aria-label="Main navigation"
           >
             <ul className="space-y-2">
-              {mobileNavigation.map((item) => (
+              {navigation.map((item) => (
                 <li key={item.name}>
                   <button
                     onClick={() => handleNavClick(item.onClick)}
@@ -210,7 +206,7 @@ export function Sidebar({
                   )}
                 >
                   <p className="text-sm font-medium text-white truncate">
-                    {reduxUser?.firstName ?? "Guest"}
+                    {fullName?? "Guest"}
                   </p>
                   <p className="text-xs text-slate-400 truncate">
                     {reduxUser?.email ?? "guest@example.com"}

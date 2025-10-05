@@ -89,6 +89,22 @@ export function TransactionDetailsPage() {
                 ${transaction.total}
               </span>
             </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400">Status</span>
+              <span
+                className={`font-semibold px-2 py-1 rounded-full text-sm capitalize ${
+                  transaction.status === "completed"
+                    ? "bg-green-500/20 text-green-400"
+                    : transaction.status === "pending"
+                    ? "bg-yellow-500/20 text-yellow-400"
+                    : transaction.status === "failed"
+                    ? "bg-red-500/20 text-red-400"
+                    : "bg-slate-500/20 text-slate-300"
+                }`}
+              >
+                {transaction.status}
+              </span>
+            </div>
           </CardContent>
         </Card>
 

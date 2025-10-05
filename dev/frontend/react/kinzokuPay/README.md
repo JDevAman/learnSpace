@@ -182,8 +182,8 @@ Queries:
 - How to send mail?
 - Why need toast in provider?
 - How and why rbac
-
-
+- Upload Avatar to S3 and get url to save in mongoDB
+- Deploy projects on AWS.
 
 RBAC:
 

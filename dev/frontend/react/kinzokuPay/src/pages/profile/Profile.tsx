@@ -1,8 +1,5 @@
-"use client";
-
 import ProfileCard from "../../components/Card/ProfileCard";
 import { useSelector } from "react-redux";
-import type { RootState } from "../../store";
 
 export default function ProfilePage() {
   const user = useSelector((state: RootState) => state.auth.user);
