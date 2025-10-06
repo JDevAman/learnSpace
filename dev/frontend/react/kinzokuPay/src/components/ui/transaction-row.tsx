@@ -14,10 +14,10 @@ interface TransactionRowProps {
 
 export function TransactionRow({ transaction }: TransactionRowProps) {
   const { goToTransactionDetails } = useAppNavigation();
-
+console.log(transaction);
   const getStatusIcon = () => {
     switch (transaction.status) {
-      case "completed":
+      case "success":
         return <CheckCircle className="w-4 h-4 text-green-400" />;
       case "pending":
         return <Clock className="w-4 h-4 text-yellow-400" />;
