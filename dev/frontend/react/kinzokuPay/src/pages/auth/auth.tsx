@@ -11,7 +11,7 @@ import { TabButton } from "../../components/Button/TabButton";
 import { api } from "../../utils/api";
 import { useOAuth } from "../../utils/useOAuth";
 import { GoogleIcon } from "../../components/icons/GoogleIcon";
-import { regex } from "../../../shared/userValidator";
+import { regex } from "../../../shared/validators";
 
 type Tab = "signin" | "signup";
 
@@ -20,8 +20,7 @@ export function AuthPage() {
     useAppNavigation();
   const { pathname } = useLocation();
   const dispatch = useAppDispatch();
-  const backendUrl = import.meta.env.VITE_BACKEND_URL;
-  const { handleOAuth } = useOAuth(backendUrl);
+  const { handleOAuth } = useOAuth();
   const signupEmail = useAppSelector((state) => state.auth.signupEmail);
 
   // ---------------- State ----------------
@@ -180,7 +179,7 @@ export function AuthPage() {
       setLoading(true);
 
       try {
-        const res = await api.post(`/api/v1/user/${activeTab}`, {
+        const res = await api.post(`user/${activeTab}`, {
           userName: formData.email,
           password: formData.password,
           ...(activeTab === "signup" && {

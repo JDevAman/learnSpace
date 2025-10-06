@@ -50,31 +50,31 @@ export function DashboardPage() {
   const { goToPayment, goToTransactions } = useAppNavigation();
 
   return (
-    <div className="space-y-8">
+    <div className="min-h-screen w-full bg-black px-4 sm:px-6 lg:px-8 py-8 space-y-10">
       {/* Welcome Section */}
-      <div>
-        <h1 className="text-3xl font-thin text-white mb-2">
+      <section>
+        <h1 className="text-3xl font-light text-white mb-2">
           Welcome back, Alex
         </h1>
-        <p className="text-slate-400">
+        <p className="text-slate-400 text-sm">
           Here's what's happening with your account today.
         </p>
-      </div>
+      </section>
 
       {/* Balance Card */}
-      <Card className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border-cyan-500/20">
+      <Card className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border-cyan-500/20 shadow-md">
         <CardContent className="p-8">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             <div>
               <p className="text-slate-400 mb-2">Available Balance</p>
-              <p className="text-4xl font-thin text-white mb-4">$12,847.50</p>
+              <p className="text-4xl font-thin text-white mb-3">$12,847.50</p>
               <div className="flex items-center text-green-400 text-sm">
                 <TrendingUp className="w-4 h-4 mr-1" />
                 <span>+12.5% from last month</span>
               </div>
             </div>
             <div className="text-right">
-              <div className="w-16 h-16 bg-cyan-500/20 rounded-full flex items-center justify-center mb-4">
+              <div className="w-16 h-16 bg-cyan-500/20 rounded-full flex items-center justify-center mb-4 mx-auto sm:mx-0">
                 <DollarSign className="w-8 h-8 text-cyan-400" />
               </div>
               <Button variant="outline" size="sm" onClick={goToPayment}>
@@ -86,9 +86,9 @@ export function DashboardPage() {
       </Card>
 
       {/* Quick Actions */}
-      <div>
+      <section>
         <h2 className="text-xl font-semibold text-white mb-4">Quick Actions</h2>
-        <div className="grid md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <Button
             variant="outline"
             className="h-24 flex-col space-y-2 bg-slate-900/30 border-slate-800 hover:border-cyan-500/50"
@@ -108,79 +108,71 @@ export function DashboardPage() {
           <Button
             variant="outline"
             className="h-24 flex-col space-y-2 bg-slate-900/30 border-slate-800 hover:border-cyan-500/50"
-            onClick={goToPayment}
+            onClick={goToTransactions}
           >
             <Eye className="w-6 h-6 text-cyan-400" />
             <span>View Transactions</span>
           </Button>
         </div>
-      </div>
+      </section>
 
       {/* Stats Grid */}
-      <div className="grid md:grid-cols-4 gap-6">
-        <Card className="bg-slate-900/30 border-slate-800">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-slate-400">
-              This Month
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-semibold text-white mb-1">$4,250</div>
-            <div className="flex items-center text-green-400 text-sm">
-              <TrendingUp className="w-3 h-3 mr-1" />
-              <span>+8.2%</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-slate-900/30 border-slate-800">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-slate-400">
-              Sent
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-semibold text-white mb-1">$2,150</div>
-            <div className="flex items-center text-red-400 text-sm">
-              <TrendingDown className="w-3 h-3 mr-1" />
-              <span>-3.1%</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-slate-900/30 border-slate-800">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-slate-400">
-              Received
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-semibold text-white mb-1">$6,400</div>
-            <div className="flex items-center text-green-400 text-sm">
-              <TrendingUp className="w-3 h-3 mr-1" />
-              <span>+15.3%</span>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-slate-900/30 border-slate-800">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-slate-400">
-              Transactions
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-semibold text-white mb-1">47</div>
-            <div className="flex items-center text-green-400 text-sm">
-              <TrendingUp className="w-3 h-3 mr-1" />
-              <span>+12.0%</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[
+          {
+            title: "This Month",
+            value: "$4,250",
+            change: "+8.2%",
+            positive: true,
+          },
+          {
+            title: "Sent",
+            value: "$2,150",
+            change: "-3.1%",
+            positive: false,
+          },
+          {
+            title: "Received",
+            value: "$6,400",
+            change: "+15.3%",
+            positive: true,
+          },
+          {
+            title: "Transactions",
+            value: "47",
+            change: "+12.0%",
+            positive: true,
+          },
+        ].map((stat, i) => (
+          <Card key={i} className="bg-slate-900/30 border-slate-800">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-slate-400">
+                {stat.title}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-semibold text-white mb-1">
+                {stat.value}
+              </div>
+              <div
+                className={`flex items-center text-sm ${
+                  stat.positive ? "text-green-400" : "text-red-400"
+                }`}
+              >
+                {stat.positive ? (
+                  <TrendingUp className="w-3 h-3 mr-1" />
+                ) : (
+                  <TrendingDown className="w-3 h-3 mr-1" />
+                )}
+                <span>{stat.change}</span>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </section>
 
       {/* Recent Transactions */}
-      <div>
+      <section>
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold text-white">
             Recent Transactions
@@ -194,7 +186,7 @@ export function DashboardPage() {
             <TransactionRow key={transaction.id} transaction={transaction} />
           ))}
         </div>
-      </div>
+      </section>
     </div>
   );
 }

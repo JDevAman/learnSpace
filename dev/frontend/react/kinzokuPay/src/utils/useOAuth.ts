@@ -1,10 +1,11 @@
 import { useCallback } from "react";
 import { useAppDispatch } from "../store/hooks";
 import { setUser } from "../store/slices/authSlice";
-import { api } from "./api";
+import { api, baseUrl } from "./api";
 import { useAppNavigation } from "./useAppNavigation";
+import { backendUrl } from "./api";
 
-export function useOAuth(backendUrl: string) {
+export function useOAuth() {
   const dispatch = useAppDispatch();
   const { goToDashboard } = useAppNavigation();
 
@@ -15,7 +16,7 @@ export function useOAuth(backendUrl: string) {
       const left = window.screen.width / 2 - width / 2;
       const top = window.screen.height / 2 - height / 2;
 
-      const url = `${backendUrl}/api/v1/auth/${provider}`;
+      const url = `${backendUrl}${baseUrl}/auth/${provider}`;
       const popup = window.open(
         url,
         "_blank",
@@ -28,7 +29,7 @@ export function useOAuth(backendUrl: string) {
         if (event.data.success) {
           (async () => {
             try {
-              const res = await api.get("/api/v1/user/me");
+              const res = await api.get(`${backendUrl}${baseUrl}/user/me`);
               dispatch(setUser(res.data.user));
               goToDashboard();
             } catch (err) {

@@ -15,6 +15,7 @@ import { AboutPage } from "./pages/about/about";
 import { FeaturesPage } from "./pages/features/features";
 import { TransactionDetailsPage } from "./pages/transaction/TransactionDetail";
 import ProfilePage from "./pages/profile/Profile";
+import { AppInit } from "./AppInit";
 
 function AppRoutes() {
   return (
@@ -56,6 +57,7 @@ function AppRoutes() {
 function App() {
   return (
     <Router>
+      <AppInit />
       <AppRoutes />
       <ReduxToast />
     </Router>

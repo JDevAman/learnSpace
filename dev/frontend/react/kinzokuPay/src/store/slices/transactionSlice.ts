@@ -2,12 +2,13 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface Transaction {
   id: string;
-  type: "send" | "receive" | "request" | "refund";
-  amount: number;
+  type: "send" | "receive" | "refund";
+  amount: number; // always in paise
   status: "success" | "pending" | "failed" | "refunded";
   date: string;
   sender?: string;
   recipient?: string;
+  note?: string;
 }
 
 interface TransactionsState {
@@ -33,12 +34,10 @@ const transactionSlice = createSlice({
       state.list.unshift(action.payload);
     },
     updateTransaction: (state, action: PayloadAction<Transaction>) => {
-      // reflect backend-confirmed update (status change, refund, etc.)
       const idx = state.list.findIndex((t) => t.id === action.payload.id);
       if (idx !== -1) state.list[idx] = action.payload;
     },
     refundTransaction: (state, action: PayloadAction<string>) => {
-      // mark refunded only after backend confirms
       const txn = state.list.find((t) => t.id === action.payload);
       if (txn) txn.status = "refunded";
     },
@@ -50,8 +49,8 @@ const transactionSlice = createSlice({
     },
     clearTransactions: (state) => {
       state.list = [];
-      state.error = null;
       state.loading = false;
+      state.error = null;
     },
   },
 });

@@ -1,30 +1,56 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { Request } from "./requestSlice";
 
-interface AuthState {
-  user: { id: string; name: string; email: string } | null;
-  token?: string;
+interface PaymentsState {
+  balance: number; // in paise
+  requests: Request[];
+  addMoneyAmount: number; // frontend input, in rupees
+  loading: boolean;
+  error?: string | null;
 }
 
-const initialState: AuthState = {
-  user: null,
+const initialState: PaymentsState = {
+  balance: 0,
+  requests: [],
+  addMoneyAmount: 0,
+  loading: false,
+  error: null,
 };
 
-const paymentSlice = createSlice({
-  name: "auth",
+const paymentsSlice = createSlice({
+  name: "payments",
   initialState,
   reducers: {
-    setUser: (state, action: PayloadAction<AuthState["user"]>) => {
-      state.user = action.payload;
+    setBalance: (state, action: PayloadAction<number>) => {
+      state.balance = action.payload;
     },
-    setToken: (state, action: PayloadAction<string>) => {
-      state.token = action.payload;
+    addRequest: (state, action: PayloadAction<Request>) => {
+      state.requests.unshift(action.payload);
     },
-    logout: (state) => {
-      state.user = null;
-      state.token = undefined;
+    clearRequests: (state) => {
+      state.requests = [];
     },
+    setAddMoneyAmount: (state, action: PayloadAction<number>) => {
+      state.addMoneyAmount = action.payload;
+    },
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.loading = action.payload;
+    },
+    setError: (state, action: PayloadAction<string | null>) => {
+      state.error = action.payload;
+    },
+    resetPaymentsState: () => initialState,
   },
 });
 
-export const { setUser, setToken, logout } = paymentSlice.actions;
-export default paymentSlice.reducer;
+export const {
+  setBalance,
+  addRequest,
+  clearRequests,
+  setAddMoneyAmount,
+  setLoading,
+  setError,
+  resetPaymentsState,
+} = paymentsSlice.actions;
+
+export default paymentsSlice.reducer;

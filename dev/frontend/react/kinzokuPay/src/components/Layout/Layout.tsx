@@ -7,14 +7,20 @@ import { cn } from "../../utils/utils";
 import { useAppSelector } from "../../store/hooks";
 
 interface LayoutProps {
-  protectedPage?: boolean; // true if page requires login
+  protectedPage?: boolean;
 }
 
 export function Layout({ protectedPage = false }: LayoutProps) {
-  const user = useAppSelector((state) => state.auth.user);
+  const { user, loading } = useAppSelector((state) => state.auth);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
 
+  if (loading)
+    return (
+      <div className="min-h-screen flex items-center justify-center text-white">
+        Loading...
+      </div>
+    );
   // If route is protected but user is not logged in
   if (protectedPage && !user) {
     return <Navigate to="/auth" replace />;

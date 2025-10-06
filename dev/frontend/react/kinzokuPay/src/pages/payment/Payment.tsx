@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Button } from "../../components/Button/Button";
 import { InputField } from "../../components/Form/InputField";
 import {
@@ -7,271 +7,322 @@ import {
   CardHeader,
   CardTitle,
 } from "../../components/Card/Card";
-import { Send, Download, Eye, ArrowRight, CheckCircle } from "lucide-react";
+import { Send, Download, Eye, Plus } from "lucide-react";
 import { useAppNavigation } from "../../utils/useAppNavigation";
+import { regex } from "../../../shared/validators";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import { addToast } from "../../store/slices/uiSlice";
+import { api } from "../../utils/api";
+import { setAddMoneyAmount, setBalance } from "../../store/slices/paymentSlice";
 
 export function PaymentPage() {
   const { goToSuccess } = useAppNavigation();
-  const [activeTab, setActiveTab] = useState<"pay" | "request" | "balance">(
-    "pay"
+  const dispatch = useAppDispatch();
+  const addMoneyAmount = useAppSelector(
+    (state) => state.payment.addMoneyAmount
   );
+
+  const [activeTab, setActiveTab] = useState<
+    "pay" | "request" | "balance" | "add"
+  >("pay");
+  const [loading, setLoading] = useState(false);
+  const balance = useAppSelector((state) => state.payment.balance);
+
   const [paymentData, setPaymentData] = useState({
     recipient: "",
     amount: "",
     note: "",
   });
 
+  const [errors, setErrors] = useState({
+    recipient: "",
+    amount: "",
+  });
+
+  // Input validation
   const handleInputChange = (field: string, value: string) => {
     setPaymentData((prev) => ({ ...prev, [field]: value }));
+
+    if (field === "recipient") {
+      if (!value.trim())
+        setErrors((e) => ({ ...e, recipient: "Email is required" }));
+      else if (!regex.email.test(value.trim()))
+        setErrors((e) => ({ ...e, recipient: "Invalid email address" }));
+      else setErrors((e) => ({ ...e, recipient: "" }));
+    }
+
+    if (field === "amount") {
+      let sanitized = value.replace(/[^\d.]/g, "");
+      const parts = sanitized.split(".");
+      if (parts.length > 2) sanitized = parts[0] + "." + parts[1];
+      if (parts[1]?.length > 2)
+        sanitized = parts[0] + "." + parts[1].slice(0, 2);
+      setPaymentData((prev) => ({ ...prev, amount: sanitized }));
+      if (!sanitized)
+        setErrors((e) => ({ ...e, amount: "Amount is required" }));
+      else if (!regex.amount.test(sanitized))
+        setErrors((e) => ({
+          ...e,
+          amount: "Enter a valid amount (up to 2 decimals)",
+        }));
+      else setErrors((e) => ({ ...e, amount: "" }));
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleAddMoneyChange = (value: string) => {
+    // Sanitize input
+    let sanitized = value.replace(/[^\d.]/g, "");
+    const parts = sanitized.split(".");
+    if (parts.length > 2) sanitized = parts[0] + "." + parts[1];
+    if (parts[1]?.length > 2) sanitized = parts[0] + "." + parts[1].slice(0, 2);
+
+    dispatch(setAddMoneyAmount(parseFloat(sanitized)));
+  };
+
+  const isFormValid =
+    !errors.recipient &&
+    !errors.amount &&
+    paymentData.recipient.trim().length > 0 &&
+    paymentData.amount.trim().length > 0;
+
+  // Submit send/request
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    goToSuccess();
+    if (!isFormValid) {
+      dispatch(
+        addToast({
+          title: "Invalid input",
+          description: "Please fix form errors before proceeding.",
+          variant: "destructive",
+        })
+      );
+      return;
+    }
+
+    setLoading(true);
+    const endpoint =
+      activeTab === "pay" ? "/payments/transfer" : "/payments/request";
+
+    try {
+      const payload = {
+        ...paymentData,
+        amount: Math.round(parseFloat(paymentData.amount) * 100),
+      };
+      await api.post(endpoint, payload);
+      dispatch(
+        addToast({
+          title:
+            activeTab === "pay"
+              ? "Payment Sent Successfully"
+              : "Request Sent Successfully",
+          description:
+            activeTab === "pay"
+              ? `Money sent to ${paymentData.recipient}`
+              : `Request sent to ${paymentData.recipient}`,
+        })
+      );
+      goToSuccess();
+      setPaymentData({ recipient: "", amount: "", note: "" });
+    } catch (err: any) {
+      dispatch(
+        addToast({
+          title: "Error",
+          description:
+            err.response?.data?.message ||
+            "Something went wrong. Try again later.",
+          variant: "destructive",
+        })
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Check balance
+  const handleCheckBalance = async () => {
+    setLoading(true);
+    try {
+      const { data } = await api.get("/payments/balance");
+      dispatch(setBalance(data.balance / 100)); // Redux updated
+    } catch {
+      dispatch(
+        addToast({
+          title: "Error",
+          description: "Failed to fetch balance.",
+          variant: "destructive",
+        })
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Add money
+  const handleAddMoney = async () => {
+    if (!addMoneyAmount || isNaN(Number(addMoneyAmount))) return;
+    setLoading(true);
+    try {
+      await api.put("/payments/add-money", {
+        amount: Math.round(Number(addMoneyAmount) * 100),
+      });
+      dispatch(
+        addToast({
+          title: "Money Added",
+          description: `₹${addMoneyAmount} added to your account.`,
+        })
+      );
+      dispatch(setAddMoneyAmount(0));
+      handleCheckBalance();
+    } catch {
+      dispatch(
+        addToast({
+          title: "Error",
+          description: "Failed to add money.",
+          variant: "destructive",
+        })
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   const tabs = [
     { id: "pay", label: "Send Payment", icon: Send },
     { id: "request", label: "Request Money", icon: Download },
-    { id: "balance", label: "Check Balance", icon: Eye },
+    { id: "add", label: "Add Money", icon: Plus },
   ];
 
   const ActiveIcon = tabs.find((tab) => tab.id === activeTab)?.icon;
+
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-thin text-white mb-2">Payments</h1>
-        <p className="text-slate-400">
-          Send money, request payments, or check your balance
-        </p>
-      </div>
+    <div className="min-h-screen px-4 py-8 md:px-8 md:py-10 lg:px-12">
+      <div className="max-w-7xl mx-auto space-y-8">
+        <header>
+          <h1 className="text-3xl font-light text-white mb-2">Payments</h1>
+          <p className="text-slate-400">
+            Send money, request payments, check balance, or add funds.
+          </p>
+        </header>
 
-      {/* Tab Navigation */}
-      <div className="flex space-x-1 bg-slate-900/50 p-1 rounded-xl">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
-            className={`flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-lg text-sm font-medium transition-all ${
-              activeTab === tab.id
-                ? "bg-cyan-500/20 text-cyan-400 shadow-lg"
-                : "text-slate-400 hover:text-white hover:bg-slate-800/50"
-            }`}
-          >
-            {tab.icon && <tab.icon className="w-4 h-4" />}
-            <span className="hidden sm:inline">{tab.label}</span>
-          </button>
-        ))}
-      </div>
+        {/* Tabs */}
+        <div className="flex flex-wrap gap-2 bg-slate-900/50 p-1 rounded-xl">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`flex-1 min-w-[100px] flex items-center justify-center space-x-2 py-3 px-4 rounded-lg text-sm font-medium transition-all ${
+                activeTab === tab.id
+                  ? "bg-cyan-500/20 text-cyan-400 shadow-lg"
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/50"
+              }`}
+            >
+              <tab.icon className="w-4 h-4" />
+              <span className="hidden sm:inline">{tab.label}</span>
+            </button>
+          ))}
+        </div>
 
-      {/* Tab Content */}
-      <div className="grid lg:grid-cols-2 gap-8">
-        {/* Main Form */}
-        <Card className="bg-slate-900/30 border-slate-800">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center">
-              {ActiveIcon && (
-                <div className="w-5 h-5 mr-2 text-cyan-400">
-                  <ActiveIcon className="w-5 h-5 text-cyan-400" />
-                </div>
-              )}
-              {tabs.find((tab) => tab.id === activeTab)?.label}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {activeTab === "pay" && (
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <InputField
-                  type="email"
-                  label="Send to"
-                  placeholder="Enter email or username"
-                  value={paymentData.recipient}
-                  onChange={(e) =>
-                    handleInputChange("recipient", e.target.value)
-                  }
-                  required
-                />
-
-                <InputField
-                  type="number"
-                  label="Amount"
-                  placeholder="0.00"
-                  value={paymentData.amount}
-                  onChange={(e) => handleInputChange("amount", e.target.value)}
-                  required
-                />
-
-                <InputField
-                  type="text"
-                  label="Note (optional)"
-                  placeholder="What's this for?"
-                  value={paymentData.note}
-                  onChange={(e) => handleInputChange("note", e.target.value)}
-                />
-
-                <Button type="submit" variant="glow" className="w-full">
-                  <Send className="w-4 h-4 mr-2" />
-                  Send ${paymentData.amount || "0.00"}
-                </Button>
-              </form>
-            )}
-
-            {activeTab === "request" && (
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <InputField
-                  type="email"
-                  label="Request from"
-                  placeholder="Enter email or username"
-                  value={paymentData.recipient}
-                  onChange={(e) =>
-                    handleInputChange("recipient", e.target.value)
-                  }
-                  required
-                />
-
-                <InputField
-                  type="number"
-                  label="Amount"
-                  placeholder="0.00"
-                  value={paymentData.amount}
-                  onChange={(e) => handleInputChange("amount", e.target.value)}
-                  required
-                />
-
-                <InputField
-                  type="text"
-                  label="Note (optional)"
-                  placeholder="What's this for?"
-                  value={paymentData.note}
-                  onChange={(e) => handleInputChange("note", e.target.value)}
-                />
-
-                <Button type="submit" variant="glow" className="w-full">
-                  <Download className="w-4 h-4 mr-2" />
-                  Request ${paymentData.amount || "0.00"}
-                </Button>
-              </form>
-            )}
-
-            {activeTab === "balance" && (
-              <div className="space-y-6">
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 bg-cyan-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Eye className="w-8 h-8 text-cyan-400" />
-                  </div>
-                  <h3 className="text-2xl font-semibold text-white mb-2">
-                    Available Balance
-                  </h3>
-                  <p className="text-4xl font-thin text-cyan-400 mb-4">
-                    $12,847.50
-                  </p>
-                  <p className="text-slate-400">Last updated: Just now</p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-slate-800/50 rounded-lg p-4 text-center">
-                    <p className="text-slate-400 text-sm mb-1">Pending In</p>
-                    <p className="text-green-400 font-semibold">$750.00</p>
-                  </div>
-                  <div className="bg-slate-800/50 rounded-lg p-4 text-center">
-                    <p className="text-slate-400 text-sm mb-1">Pending Out</p>
-                    <p className="text-yellow-400 font-semibold">$125.50</p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Summary/Info Panel */}
-        <div className="space-y-6">
-          {/* Quick Stats */}
-          <Card className="bg-slate-900/30 border-slate-800">
+        {/* Main Grid */}
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Left: Send / Request / Add */}
+          <Card className="bg-slate-900/30 border-slate-800 lg:col-span-2 h-fit">
             <CardHeader>
-              <CardTitle className="text-white text-lg">Quick Stats</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-slate-400">Available Balance</span>
-                <span className="text-white font-semibold">$12,847.50</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-400">This Month Sent</span>
-                <span className="text-red-400 font-semibold">$2,450.00</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-400">This Month Received</span>
-                <span className="text-green-400 font-semibold">$4,120.00</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Recent Recipients */}
-          <Card className="bg-slate-900/30 border-slate-800">
-            <CardHeader>
-              <CardTitle className="text-white text-lg">
-                Recent Recipients
+              <CardTitle className="flex items-center text-white">
+                {ActiveIcon && (
+                  <ActiveIcon className="w-5 h-5 mr-2 text-cyan-400" />
+                )}
+                {tabs.find((tab) => tab.id === activeTab)?.label}
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              {[
-                {
-                  name: "Sarah Chen",
-                  email: "sarah@example.com",
-                  avatar: "SC",
-                },
-                {
-                  name: "Mike Johnson",
-                  email: "mike@example.com",
-                  avatar: "MJ",
-                },
-                {
-                  name: "Emily Davis",
-                  email: "emily@example.com",
-                  avatar: "ED",
-                },
-              ].map((recipient, index) => (
-                <div
-                  key={index}
-                  className="flex items-center space-x-3 p-2 rounded-lg hover:bg-slate-800/50 cursor-pointer transition-colors"
-                  onClick={() =>
-                    handleInputChange("recipient", recipient.email)
-                  }
-                >
-                  <div className="w-10 h-10 bg-cyan-500/20 rounded-full flex items-center justify-center">
-                    <span className="text-cyan-400 font-medium text-sm">
-                      {recipient.avatar}
-                    </span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white font-medium truncate">
-                      {recipient.name}
-                    </p>
-                    <p className="text-slate-400 text-sm truncate">
-                      {recipient.email}
-                    </p>
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-slate-500" />
+            <CardContent className="space-y-6">
+              {activeTab === "pay" || activeTab === "request" ? (
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <InputField
+                    type="email"
+                    label={activeTab === "pay" ? "Send to" : "Request from"}
+                    placeholder="Enter email"
+                    value={paymentData.recipient}
+                    onChange={(e) =>
+                      handleInputChange("recipient", e.target.value)
+                    }
+                    error={errors.recipient}
+                    required
+                  />
+                  <InputField
+                    type="text"
+                    label="Amount"
+                    placeholder="0.00"
+                    value={paymentData.amount}
+                    onChange={(e) =>
+                      handleInputChange("amount", e.target.value)
+                    }
+                    error={errors.amount}
+                    required
+                  />
+                  <InputField
+                    type="text"
+                    label="Note (optional)"
+                    placeholder="What's this for?"
+                    value={paymentData.note}
+                    onChange={(e) => handleInputChange("note", e.target.value)}
+                  />
+                  <Button
+                    type="submit"
+                    variant={isFormValid ? "glow" : "default"}
+                    className="w-full"
+                    disabled={!isFormValid || loading}
+                  >
+                    {loading
+                      ? "Processing..."
+                      : activeTab === "pay"
+                      ? `Send ₹${paymentData.amount || "0.00"}`
+                      : `Request ₹${paymentData.amount || "0.00"}`}
+                  </Button>
+                </form>
+              ) : (
+                <div className="space-y-6 py-4">
+                  <InputField
+                    type="number"
+                    label="Add Money"
+                    placeholder="0.00"
+                    value={addMoneyAmount}
+                    onChange={(e) => handleAddMoneyChange(e.target.value)}
+                  />
+                  <Button
+                    onClick={handleAddMoney}
+                    disabled={!addMoneyAmount || loading}
+                    variant="glow"
+                    className="w-full"
+                  >
+                    {loading
+                      ? "Processing..."
+                      : `Add ₹${addMoneyAmount || "0.00"}`}
+                  </Button>
                 </div>
-              ))}
+              )}
             </CardContent>
           </Card>
 
-          {/* Security Notice */}
-          <Card className="bg-green-500/5 border-green-500/20">
-            <CardContent className="p-4">
-              <div className="flex items-start space-x-3">
-                <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-green-400 font-medium text-sm mb-1">
-                    Secure Transaction
-                  </p>
-                  <p className="text-slate-300 text-sm">
-                    All payments are encrypted and protected by bank-level
-                    security.
-                  </p>
-                </div>
-              </div>
+          {/* Right: Balance Card */}
+          <Card className="bg-slate-900/30 border-slate-800 lg:col-span-1 h-fit">
+            <CardHeader>
+              <CardTitle className="flex items-center text-white">
+                <Eye className="w-5 h-5 mr-2 text-cyan-400" />
+                Available Balance
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col justify-center items-center space-y-6 py-8">
+              <p className="text-5xl md:text-6xl font-thin text-cyan-400">
+                ₹{balance !== null ? balance.toFixed(2) : "—"}
+              </p>
+              <Button
+                onClick={handleCheckBalance}
+                disabled={loading}
+                variant="glow"
+                className="w-full"
+              >
+                {loading ? "Fetching..." : "Refresh Balance"}
+              </Button>
             </CardContent>
           </Card>
         </div>

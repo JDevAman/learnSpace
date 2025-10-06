@@ -8,7 +8,7 @@ import { useOAuth } from "../../utils/useOAuth";
 import { useState } from "react";
 import { useAppDispatch } from "../../store/hooks";
 import { setSignupEmail } from "../../store/slices/authSlice";
-import { regex } from "../../../shared/userValidator";
+import { regex } from "../../../shared/validators";
 
 export function HeroSection() {
   const dispatch = useAppDispatch();

@@ -9,7 +9,7 @@ mainRouter.get("/", function (req, res) {
     res.send("API is live")
 })
 mainRouter.use("/user", userRouter);
-mainRouter.use("/account", accountRouter);
+mainRouter.use("/payments", accountRouter);
 mainRouter.use("/auth", authRouter);
 
 export default mainRouter;

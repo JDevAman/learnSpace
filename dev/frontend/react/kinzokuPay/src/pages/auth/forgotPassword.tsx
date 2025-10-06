@@ -3,7 +3,7 @@ import { Button } from "../../components/Button/Button";
 import { InputField } from "../../components/Form/InputField";
 import { AuthCard } from "../../components/Card/AuthCard";
 import { Mail, CheckCircle2, ArrowLeft } from "lucide-react";
-import { regex } from "../../../shared/userValidator";
+import { regex } from "../../../shared/validators";
 import { useAppNavigation } from "../../utils/useAppNavigation";
 import { useAppDispatch } from "../../store/hooks";
 import { addToast } from "../../store/slices/uiSlice";
