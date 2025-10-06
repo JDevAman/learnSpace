@@ -53,7 +53,6 @@ authRouter.get("/google/callback", async (req, res) => {
     const { email, name, picture } = userInfo.data;
     const { firstName, lastName } = parseName(name);
 
-    console.log("successful");
     let user = await UserModel.findOne({ userName: email });
 
     if (!user) {

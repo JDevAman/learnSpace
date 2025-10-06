@@ -8,7 +8,7 @@ import {
   userSignInSchema,
   userSignUpSchema,
   updateUserSchema,
-} from "../schema/userValidator";
+} from "../validators/userValidator";
 import authenticate from "../middlewares/authMiddleware";
 
 const userRouter = express.Router();

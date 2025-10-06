@@ -21,12 +21,10 @@ export function PaymentPage() {
   const addMoneyAmount = useAppSelector(
     (state) => state.payment.addMoneyAmount
   );
-
-  const [activeTab, setActiveTab] = useState<
-    "pay" | "request" | "balance" | "add"
-  >("pay");
-  const [loading, setLoading] = useState(false);
   const balance = useAppSelector((state) => state.payment.balance);
+
+  const [activeTab, setActiveTab] = useState<"pay" | "request" | "add">("pay");
+  const [loading, setLoading] = useState(false);
 
   const [paymentData, setPaymentData] = useState({
     recipient: "",
@@ -37,46 +35,88 @@ export function PaymentPage() {
   const [errors, setErrors] = useState({
     recipient: "",
     amount: "",
+    addMoney: "",
   });
 
-  // Input validation
-  const handleInputChange = (field: string, value: string) => {
-    setPaymentData((prev) => ({ ...prev, [field]: value }));
-
-    if (field === "recipient") {
-      if (!value.trim())
-        setErrors((e) => ({ ...e, recipient: "Email is required" }));
-      else if (!regex.email.test(value.trim()))
-        setErrors((e) => ({ ...e, recipient: "Invalid email address" }));
-      else setErrors((e) => ({ ...e, recipient: "" }));
-    }
-
-    if (field === "amount") {
-      let sanitized = value.replace(/[^\d.]/g, "");
-      const parts = sanitized.split(".");
-      if (parts.length > 2) sanitized = parts[0] + "." + parts[1];
-      if (parts[1]?.length > 2)
-        sanitized = parts[0] + "." + parts[1].slice(0, 2);
-      setPaymentData((prev) => ({ ...prev, amount: sanitized }));
-      if (!sanitized)
-        setErrors((e) => ({ ...e, amount: "Amount is required" }));
-      else if (!regex.amount.test(sanitized))
-        setErrors((e) => ({
-          ...e,
-          amount: "Enter a valid amount (up to 2 decimals)",
-        }));
-      else setErrors((e) => ({ ...e, amount: "" }));
-    }
-  };
-
-  const handleAddMoneyChange = (value: string) => {
-    // Sanitize input
+  // Sanitize amount helper
+  const sanitizeAmount = (value: string): string => {
     let sanitized = value.replace(/[^\d.]/g, "");
     const parts = sanitized.split(".");
     if (parts.length > 2) sanitized = parts[0] + "." + parts[1];
     if (parts[1]?.length > 2) sanitized = parts[0] + "." + parts[1].slice(0, 2);
+    return sanitized;
+  };
 
-    dispatch(setAddMoneyAmount(parseFloat(sanitized)));
+  // Validate amount helper
+  const validateAmount = (
+    value: string,
+    field: "amount" | "addMoney"
+  ): void => {
+    if (!value) {
+      setErrors((e) => ({ ...e, [field]: "Amount is required" }));
+    } else if (!regex.amount.test(value)) {
+      setErrors((e) => ({
+        ...e,
+        [field]: "Enter a valid amount (up to 2 decimals)",
+      }));
+    } else if (parseFloat(value) <= 0) {
+      setErrors((e) => ({
+        ...e,
+        [field]: "Amount must be greater than 0",
+      }));
+    } else {
+      setErrors((e) => ({ ...e, [field]: "" }));
+    }
+  };
+
+  // Handle payment form input changes
+  const handleInputChange = (field: string, value: string) => {
+    if (field === "recipient") {
+      setPaymentData((prev) => ({ ...prev, recipient: value }));
+
+      if (!value.trim()) {
+        setErrors((e) => ({ ...e, recipient: "Email is required" }));
+      } else if (!regex.email.test(value.trim())) {
+        setErrors((e) => ({ ...e, recipient: "Invalid email address" }));
+      } else {
+        setErrors((e) => ({ ...e, recipient: "" }));
+      }
+    }
+
+    if (field === "amount") {
+      const sanitized = sanitizeAmount(value);
+      setPaymentData((prev) => ({ ...prev, amount: sanitized }));
+      validateAmount(sanitized, "amount");
+    }
+
+    if (field === "note") {
+      setPaymentData((prev) => ({ ...prev, note: value }));
+    }
+  };
+
+  // Handle add money input changes
+  const [addMoneyInput, setAddMoneyInput] = useState<string>("");
+
+  const handleAddMoneyChange = (value: string) => {
+    const sanitized = sanitizeAmount(value); // same as amount
+    setAddMoneyInput(sanitized); // raw input
+
+    if (!sanitized) {
+      setErrors((e) => ({ ...e, addMoney: "Amount is required" }));
+      dispatch(setAddMoneyAmount(0));
+    } else if (!regex.amount.test(sanitized)) {
+      setErrors((e) => ({
+        ...e,
+        addMoney: "Enter a valid amount (up to 2 decimals)",
+      }));
+      dispatch(setAddMoneyAmount(0));
+    } else if (parseFloat(sanitized) <= 0) {
+      setErrors((e) => ({ ...e, addMoney: "Amount must be greater than 0" }));
+      dispatch(setAddMoneyAmount(0));
+    } else {
+      setErrors((e) => ({ ...e, addMoney: "" }));
+      dispatch(setAddMoneyAmount(parseFloat(sanitized)));
+    }
   };
 
   const isFormValid =
@@ -84,6 +124,8 @@ export function PaymentPage() {
     !errors.amount &&
     paymentData.recipient.trim().length > 0 &&
     paymentData.amount.trim().length > 0;
+
+  const isAddMoneyValid = !errors.addMoney && addMoneyAmount > 0;
 
   // Submit send/request
   const handleSubmit = async (e: React.FormEvent) => {
@@ -106,9 +148,10 @@ export function PaymentPage() {
     try {
       const payload = {
         ...paymentData,
-        amount: Math.round(parseFloat(paymentData.amount) * 100),
+        amount: Math.round(parseFloat(paymentData.amount)),
       };
       await api.post(endpoint, payload);
+
       dispatch(
         addToast({
           title:
@@ -121,8 +164,10 @@ export function PaymentPage() {
               : `Request sent to ${paymentData.recipient}`,
         })
       );
+
       goToSuccess();
       setPaymentData({ recipient: "", amount: "", note: "" });
+      setErrors({ recipient: "", amount: "", addMoney: "" });
     } catch (err: any) {
       dispatch(
         addToast({
@@ -143,7 +188,7 @@ export function PaymentPage() {
     setLoading(true);
     try {
       const { data } = await api.get("/payments/balance");
-      dispatch(setBalance(data.balance / 100)); // Redux updated
+      dispatch(setBalance(data.balance ));
     } catch {
       dispatch(
         addToast({
@@ -159,20 +204,24 @@ export function PaymentPage() {
 
   // Add money
   const handleAddMoney = async () => {
-    if (!addMoneyAmount || isNaN(Number(addMoneyAmount))) return;
+    if (!isAddMoneyValid) return;
+
     setLoading(true);
     try {
       await api.put("/payments/add-money", {
-        amount: Math.round(Number(addMoneyAmount) * 100),
+        amount: Math.round(addMoneyAmount),
       });
+
       dispatch(
         addToast({
           title: "Money Added",
-          description: `₹${addMoneyAmount} added to your account.`,
+          description: `₹${addMoneyAmount.toFixed(2)} added to your account.`,
         })
       );
+
       dispatch(setAddMoneyAmount(0));
-      handleCheckBalance();
+      setErrors((e) => ({ ...e, addMoney: "" }));
+      await handleCheckBalance();
     } catch {
       dispatch(
         addToast({
@@ -200,7 +249,7 @@ export function PaymentPage() {
         <header>
           <h1 className="text-3xl font-light text-white mb-2">Payments</h1>
           <p className="text-slate-400">
-            Send money, request payments, check balance, or add funds.
+            Send money, request payments, or add funds to your account.
           </p>
         </header>
 
@@ -282,21 +331,28 @@ export function PaymentPage() {
               ) : (
                 <div className="space-y-6 py-4">
                   <InputField
-                    type="number"
+                    type="text"
                     label="Add Money"
                     placeholder="0.00"
-                    value={addMoneyAmount}
+                    value={addMoneyInput} // raw string state
                     onChange={(e) => handleAddMoneyChange(e.target.value)}
+                    error={errors.addMoney}
                   />
                   <Button
                     onClick={handleAddMoney}
-                    disabled={!addMoneyAmount || loading}
-                    variant="glow"
+                    disabled={!addMoneyAmount || !!errors.addMoney || loading}
+                    variant={
+                      !errors.addMoney && addMoneyAmount > 0
+                        ? "glow"
+                        : "default"
+                    }
                     className="w-full"
                   >
                     {loading
                       ? "Processing..."
-                      : `Add ₹${addMoneyAmount || "0.00"}`}
+                      : `Add ₹${
+                          addMoneyAmount ? addMoneyAmount.toFixed(2) : "0.00"
+                        }`}
                   </Button>
                 </div>
               )}
@@ -313,7 +369,10 @@ export function PaymentPage() {
             </CardHeader>
             <CardContent className="flex flex-col justify-center items-center space-y-6 py-8">
               <p className="text-5xl md:text-6xl font-thin text-cyan-400">
-                ₹{balance !== null ? balance.toFixed(2) : "—"}
+                ₹
+                {balance !== null && balance !== undefined
+                  ? balance.toFixed(2)
+                  : "—"}
               </p>
               <Button
                 onClick={handleCheckBalance}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Button } from "../../components/Button/Button";
 import { InputField } from "../../components/Form/InputField";
 import {
@@ -10,66 +10,67 @@ import {
 import { TransactionRow } from "../../components/ui/transaction-row";
 import { Search, Download, TrendingUp, TrendingDown } from "lucide-react";
 import { useAppNavigation } from "../../utils/useAppNavigation";
+import { api } from "../../utils/api";
+
+const LIMIT = 20;
 
 export function TransactionsPage() {
+  const { goToPayment } = useAppNavigation();
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [total, setTotal] = useState(0);
+  const [skip, setSkip] = useState(0);
+  const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState<
     "all" | "sent" | "received" | "pending"
   >("all");
-  const { goToPayment } = useAppNavigation();
+  const [hasMore, setHasMore] = useState(true);
 
-  const transactions = [
-    {
-      id: "1",
-      type: "received",
-      amount: 1250,
-      sender: "Sarah Chen",
-      description: "Freelance project",
-      date: "2h ago",
-      status: "completed",
-    },
-    {
-      id: "2",
-      type: "sent",
-      amount: 75.5,
-      recipient: "Mike Johnson",
-      description: "Dinner split",
-      date: "1d ago",
-      status: "completed",
-    },
-    {
-      id: "3",
-      type: "pending",
-      amount: 500,
-      recipient: "Emily Davis",
-      description: "Rent payment",
-      date: "2d ago",
-      status: "pending",
-    },
-    {
-      id: "4",
-      type: "received",
-      amount: 2000,
-      sender: "Acme Corp",
-      description: "Salary",
-      date: "3d ago",
-      status: "completed",
-    },
-  ];
+  const fetchTransactions = useCallback(
+    async (reset = false) => {
+      if (loading) return;
+      setLoading(true);
+      try {
+        const response = await api.get("/transactions", {
+          params: {
+            filter: activeFilter,
+            search: searchTerm,
+            limit: LIMIT,
+            skip: reset ? 0 : skip,
+          },
+        });
 
-  const filteredTransactions = transactions.filter((t) => {
-    const term = searchTerm.toLowerCase();
-    const matchesSearch =
-      t.description.toLowerCase().includes(term) ||
-      (t.sender && t.sender.toLowerCase().includes(term)) ||
-      (t.recipient && t.recipient.toLowerCase().includes(term));
-    const matchesFilter =
-      activeFilter === "all" ||
-      t.type === activeFilter ||
-      t.status === activeFilter;
-    return matchesSearch && matchesFilter;
-  });
+        // Backend should return { transactions: [], total: number }
+        const fetched = response.data.transactions || [];
 
+        if (reset) {
+          setTransactions(fetched);
+          setSkip(fetched.length);
+        } else {
+          setTransactions((prev) => [...prev, ...fetched]);
+          setSkip((prev) => prev + fetched.length);
+        }
+
+        setTotal(response.data.total || 0);
+        setHasMore(
+          fetched.length > 0 &&
+            (reset ? fetched.length : transactions.length + fetched.length) <
+              response.data.total
+        );
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [activeFilter, searchTerm, skip, loading, transactions.length]
+  );
+
+  useEffect(() => {
+    fetchTransactions(true); // reset on filter/search change
+  }, [activeFilter, searchTerm]);
+
+  // Stats
   const totalSent = transactions
     .filter((t) => t.type === "sent")
     .reduce((s, t) => s + t.amount, 0);
@@ -104,11 +105,10 @@ export function TransactionsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-semibold text-red-400 mb-1">
-              ${totalSent.toFixed(2)}
+              ₹{totalSent.toFixed(2)}
             </div>
             <div className="flex items-center text-slate-400 text-sm">
-              <TrendingDown className="w-3 h-3 mr-1" />
-              This month
+              <TrendingDown className="w-3 h-3 mr-1" /> This month
             </div>
           </CardContent>
         </Card>
@@ -120,11 +120,10 @@ export function TransactionsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-semibold text-green-400 mb-1">
-              ${totalReceived.toFixed(2)}
+              ₹{totalReceived.toFixed(2)}
             </div>
             <div className="flex items-center text-slate-400 text-sm">
-              <TrendingUp className="w-3 h-3 mr-1" />
-              This month
+              <TrendingUp className="w-3 h-3 mr-1" /> This month
             </div>
           </CardContent>
         </Card>
@@ -134,7 +133,7 @@ export function TransactionsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-semibold text-yellow-400 mb-1">
-              ${pendingAmount.toFixed(2)}
+              ₹{pendingAmount.toFixed(2)}
             </div>
             <div className="text-slate-400 text-sm">
               {transactions.filter((t) => t.status === "pending").length}{" "}
@@ -154,7 +153,7 @@ export function TransactionsPage() {
                   : "text-red-400"
               }`}
             >
-              ${Math.abs(totalReceived - totalSent).toFixed(2)}
+              ₹{Math.abs(totalReceived - totalSent).toFixed(2)}
             </div>
             <div className="flex items-center text-slate-400 text-sm">
               {totalReceived - totalSent >= 0 ? (
@@ -198,16 +197,15 @@ export function TransactionsPage() {
           ))}
         </div>
         <Button variant="outline" size="sm">
-          <Download className="w-4 h-4 mr-2" />
-          Export
+          <Download className="w-4 h-4 mr-2" /> Export
         </Button>
       </div>
 
-      {/* Transactions */}
+      {/* Transactions List */}
       <section className="space-y-4">
-        {filteredTransactions.length > 0 ? (
-          filteredTransactions.map((transaction) => (
-            <TransactionRow key={transaction.id} transaction={transaction} />
+        {transactions.length > 0 ? (
+          transactions.map((t) => (
+            <TransactionRow key={t._id} transaction={t} />
           ))
         ) : (
           <Card className="bg-slate-900/30 border-slate-800">
@@ -231,9 +229,16 @@ export function TransactionsPage() {
         )}
       </section>
 
-      {filteredTransactions.length > 0 && (
-        <div className="text-center">
-          <Button variant="outline">Load More</Button>
+      {/* Load More */}
+      {hasMore && (
+        <div className="text-center mt-4">
+          <Button
+            variant="outline"
+            onClick={() => fetchTransactions()}
+            disabled={loading}
+          >
+            {loading ? "Loading..." : "Load More"}
+          </Button>
         </div>
       )}
     </div>

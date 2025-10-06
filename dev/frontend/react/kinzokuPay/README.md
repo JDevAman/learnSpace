@@ -172,7 +172,10 @@ cd backend && pnpm dev
 
 ---
 
+NOTE:
 
+Always send money in rupee format.
+Backend will handle - receive and send in rupee format
 Queries:
 
 - Why clsx and cn?

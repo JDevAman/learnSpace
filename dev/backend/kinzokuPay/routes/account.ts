@@ -4,10 +4,11 @@ import {
   transferSchema,
   addMoneySchema,
   requestMoneySchema,
-} from "../schema/accountValidator";
+  paiseToRupees,
+} from "../validators/accountValidator";
 import throwError from "../utils/error";
 import authenticate from "../middlewares/authMiddleware";
-import { AccountModel, UserModel } from "../db";
+import { AccountModel } from "../db";
 import logTransaction from "../utils/logTransaction";
 import { getUserIdByEmail } from "../utils/helperFunction";
 
@@ -23,13 +24,11 @@ accountRouter.post("/transfer", authenticate, async (req, res, next) => {
   let transactionStarted = false;
 
   try {
-    console.log("Parsing request body", req.body);
     const parsed = transferSchema.safeParse(req.body);
     if (!parsed.success) throwError("Invalid input data!", 422);
 
     const from = req.user.id;
-    const { recipient, amount } = parsed.data; // amount is in paise
-    console.log("Amount to transfer (paise):", amount);
+    const { recipient, amount } = parsed.data; 
 
     const to = await getUserIdByEmail(recipient);
     if (from === to.toString()) throwError("Cannot transfer to yourself", 400);
@@ -67,7 +66,9 @@ accountRouter.post("/transfer", authenticate, async (req, res, next) => {
 
     await session.commitTransaction();
 
-    res.status(200).json({ message: "Transfer successful", amount: amount });
+    res
+      .status(200)
+      .json({ message: "Transfer successful", amount: paiseToRupees(amount) });
   } catch (err) {
     if (transactionStarted) await session.abortTransaction();
     next(err);
@@ -109,7 +110,7 @@ accountRouter.post("/request", authenticate, async (req, res, next) => {
 
     res.status(200).json({
       message: "Money request sent",
-      amount: amount,
+      amount: paiseToRupees(amount),
       requestId: transaction._id,
       expiresAt,
     });
@@ -166,7 +167,7 @@ accountRouter.post(
       await session.commitTransaction();
       res.status(200).json({
         message: "Request accepted and money transferred",
-        amount: transaction.amount,
+        amount: paiseToRupees(transaction.amount),
       });
     } catch (err) {
       await session.abortTransaction();
@@ -211,7 +212,7 @@ accountRouter.get("/balance", authenticate, async (req, res, next) => {
     const account = await AccountModel.findOne({ userId: req.user.id }).lean();
     if (!account) throwError("Account not found", 404);
 
-    res.status(200).json({ balance: account.balance });
+    res.status(200).json({ balance: paiseToRupees(account.balance) });
   } catch (err) {
     next(err);
   }
@@ -247,7 +248,9 @@ accountRouter.put("/add-money", authenticate, async (req, res, next) => {
     });
 
     await session.commitTransaction();
-    res.status(200).json({ message: "Money added", amount: amount });
+    res
+      .status(200)
+      .json({ message: "Money added", amount: paiseToRupees(amount) });
   } catch (err) {
     await session.abortTransaction();
     next(err);

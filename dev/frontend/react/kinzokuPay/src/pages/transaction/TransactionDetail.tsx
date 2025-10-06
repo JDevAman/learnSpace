@@ -4,28 +4,45 @@ import { Card, CardContent } from "../../components/Card/Card";
 import { Button } from "../../components/Button/Button";
 import { Home, Receipt, ArrowRight } from "lucide-react";
 import { useAppNavigation } from "../../utils/useAppNavigation";
+import { api } from "../../utils/api"; // use your axios/api instance
+import { Transaction } from "../../utils/types";
 
 export function TransactionDetailsPage() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const { goToDashboard, goToPayment, goToTransactions } = useAppNavigation();
+  const [transaction, setTransaction] = useState<Transaction | null>(null);
+  const [loading, setLoading] = useState(true);
   const [showAnimation, setShowAnimation] = useState(false);
 
-  // Mock transaction fetch — replace with API later
-  const transaction = {
-    id: id,
-    amount: 250.0,
-    recipient: "sarah@example.com",
-    description: "Freelance Payment",
-    date: "Jan 15, 2025 at 2:30 PM",
-    fee: 0.0,
-    status: "completed",
-    total: 250.0,
-  };
-
   useEffect(() => {
+    const fetchTransaction = async () => {
+      try {
+        const res = await api.get(`/transactions/${id}`);
+        setTransaction(res.data);
+      } catch (err) {
+        console.error("Error fetching transaction", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTransaction();
+
     const timer = setTimeout(() => setShowAnimation(true), 100);
     return () => clearTimeout(timer);
-  }, []);
+  }, [id]);
+
+  if (loading)
+    return <p className="text-white text-center mt-10">Loading...</p>;
+  if (!transaction)
+    return (
+      <p className="text-white text-center mt-10">Transaction not found</p>
+    );
+
+  // Convert amount from paise to rupees
+  const amountInRupees = (transaction.amount ).toFixed(2);
+  const feeInRupees = (transaction.fee ).toFixed(2);
+  const totalInRupees = (transaction.total ).toFixed(2);
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center px-4">
@@ -47,7 +64,9 @@ export function TransactionDetailsPage() {
           <h1 className="text-3xl font-semibold text-white mb-2">
             Transaction Details
           </h1>
-          <p className="text-slate-400">{transaction.description}</p>
+          <p className="text-slate-400">
+            {transaction.description || "No description"}
+          </p>
         </div>
 
         {/* Transaction Card */}
@@ -72,21 +91,23 @@ export function TransactionDetailsPage() {
             <div className="flex justify-between">
               <span className="text-slate-400">Amount</span>
               <span className="text-white font-semibold">
-                ${transaction.amount}
+                ₹{amountInRupees}
               </span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-400">Fee</span>
-              <span className="text-white">${transaction.fee}</span>
+              <span className="text-white">₹{feeInRupees}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-400">Date</span>
-              <span className="text-white">{transaction.date}</span>
+              <span className="text-white">
+                {new Date(transaction.date).toLocaleString()}
+              </span>
             </div>
             <div className="border-t border-slate-700 pt-4 flex justify-between">
               <span className="text-slate-400 font-medium">Total</span>
               <span className="text-cyan-400 font-semibold text-xl">
-                ${transaction.total}
+                ₹{totalInRupees}
               </span>
             </div>
             <div className="flex justify-between items-center">
@@ -97,7 +118,8 @@ export function TransactionDetailsPage() {
                     ? "bg-green-500/20 text-green-400"
                     : transaction.status === "pending"
                     ? "bg-yellow-500/20 text-yellow-400"
-                    : transaction.status === "failed"
+                    : transaction.status === "failed" ||
+                      transaction.status === "rejected"
                     ? "bg-red-500/20 text-red-400"
                     : "bg-slate-500/20 text-slate-300"
                 }`}
@@ -121,8 +143,7 @@ export function TransactionDetailsPage() {
             className="w-full group"
             onClick={goToDashboard}
           >
-            <Home className="w-4 h-4 mr-2" />
-            Back to Dashboard
+            <Home className="w-4 h-4 mr-2" /> Back to Dashboard
             <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
           </Button>
 
@@ -131,8 +152,7 @@ export function TransactionDetailsPage() {
               Send Again
             </Button>
             <Button variant="outline" onClick={goToTransactions}>
-              <Receipt className="w-4 h-4 mr-2" />
-              Back to Transactions
+              <Receipt className="w-4 h-4 mr-2" /> Back to Transactions
             </Button>
           </div>
         </div>
