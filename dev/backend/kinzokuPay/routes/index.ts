@@ -3,6 +3,7 @@ import userRouter from "./user";
 import accountRouter from "./account";
 import authRouter from "./auth";
 import transactionRouter from "./transactions";
+import dashboardRouter from "./dashboard";
 
 const mainRouter = express.Router();
 
@@ -13,5 +14,6 @@ mainRouter.use("/user", userRouter);
 mainRouter.use("/payments", accountRouter);
 mainRouter.use("/auth", authRouter);
 mainRouter.use("/transactions", transactionRouter);
+mainRouter.use("/dashboard", dashboardRouter);
 
 export default mainRouter;

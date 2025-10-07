@@ -1,4 +1,4 @@
-import { Button } from "../../components/Button/Button";
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -6,144 +6,112 @@ import {
   CardTitle,
 } from "../../components/Card/Card";
 import { TransactionRow } from "../../components/ui/transaction-row";
-import {
-  Send,
-  Download,
-  Eye,
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
-} from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign } from "lucide-react";
+import { Button } from "../../components/Button/Button";
 import { useAppNavigation } from "../../utils/useAppNavigation";
+import { fetchDashboardStatsAPI } from "../../api/dashboardService";
 
 export function DashboardPage() {
-  const recentTransactions = [
-    {
-      id: "1",
-      type: "received" as const,
-      amount: 1250.0,
-      sender: "Sarah Chen",
-      description: "Freelance project payment",
-      date: "2 hours ago",
-      status: "completed" as const,
-    },
-    {
-      id: "2",
-      type: "sent" as const,
-      amount: 75.5,
-      recipient: "Mike Johnson",
-      description: "Dinner split",
-      date: "1 day ago",
-      status: "completed" as const,
-    },
-    {
-      id: "3",
-      type: "pending" as const,
-      amount: 500.0,
-      recipient: "Emily Davis",
-      description: "Rent payment",
-      date: "2 days ago",
-      status: "pending" as const,
-    },
-  ];
-
   const { goToPayment, goToTransactions } = useAppNavigation();
+
+  const [balance, setBalance] = useState(0);
+  const [previousBalance, setPreviousBalance] = useState(0);
+  const [stats, setStats] = useState([
+    { title: "This Month", value: 0, positive: true, change: "0%" },
+    { title: "Sent", value: 0, positive: true, change: "0%" },
+    { title: "Received", value: 0, positive: true, change: "0%" },
+    { title: "Transactions", value: 0, positive: true, change: "0%" },
+  ]);
+  const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const data = await fetchDashboardStatsAPI();
+
+        setBalance(data.balance ?? 0);
+        setPreviousBalance(data.previousBalance ?? 0);
+
+        const balanceChange = data.previousBalance
+          ? ((data.balance - data.previousBalance) / data.previousBalance) * 100
+          : 0;
+
+        setStats([
+          {
+            title: "This Month",
+            value: data.thisMonth ?? 0,
+            positive: data.thisMonthChange >= 0,
+            change: `${data.thisMonthChange ?? 0}%`,
+          },
+          {
+            title: "Sent",
+            value: data.sent ?? 0,
+            positive: data.sentChange >= 0,
+            change: `${data.sentChange ?? 0}%`,
+          },
+          {
+            title: "Received",
+            value: data.received ?? 0,
+            positive: data.receivedChange >= 0,
+            change: `${data.receivedChange ?? 0}%`,
+          },
+          {
+            title: "Transactions",
+            value: data.transactions ?? 0,
+            positive: data.transactionsChange >= 0,
+            change: `${data.transactionsChange ?? 0}%`,
+          },
+        ]);
+
+        setRecentTransactions(data.recentTransactions ?? []);
+      } catch (err) {
+        console.error("Failed to fetch dashboard data:", err);
+      }
+    }
+
+    fetchData();
+  }, []);
+
+  const balanceChange = previousBalance
+    ? ((balance - previousBalance) / previousBalance) * 100
+    : 0;
 
   return (
     <div className="min-h-screen w-full bg-black px-4 sm:px-6 lg:px-8 py-8 space-y-10">
-      {/* Welcome Section */}
-      <section>
-        <h1 className="text-3xl font-light text-white mb-2">
-          Welcome back, Alex
-        </h1>
-        <p className="text-slate-400 text-sm">
-          Here's what's happening with your account today.
-        </p>
-      </section>
-
-      {/* Balance Card */}
       <Card className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border-cyan-500/20 shadow-md">
-        <CardContent className="p-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-            <div>
-              <p className="text-slate-400 mb-2">Available Balance</p>
-              <p className="text-4xl font-thin text-white mb-3">$12,847.50</p>
-              <div className="flex items-center text-green-400 text-sm">
+        <CardContent className="p-8 flex justify-between items-center">
+          <div>
+            <p className="text-slate-400 mb-2">Available Balance</p>
+            <p className="text-4xl font-thin text-white mb-3">
+              ₹{balance.toFixed(2)}
+            </p>
+            <div
+              className={`flex items-center text-sm ${
+                balanceChange >= 0 ? "text-green-400" : "text-red-400"
+              }`}
+            >
+              {balanceChange >= 0 ? (
                 <TrendingUp className="w-4 h-4 mr-1" />
-                <span>+12.5% from last month</span>
-              </div>
+              ) : (
+                <TrendingDown className="w-4 h-4 mr-1" />
+              )}
+              <span>{balanceChange.toFixed(1)}% from last month</span>
             </div>
-            <div className="text-right">
-              <div className="w-16 h-16 bg-cyan-500/20 rounded-full flex items-center justify-center mb-4 mx-auto sm:mx-0">
-                <DollarSign className="w-8 h-8 text-cyan-400" />
-              </div>
-              <Button variant="outline" size="sm" onClick={goToPayment}>
-                View Details
-              </Button>
+          </div>
+          <div className="text-right">
+            <div className="w-16 h-16 bg-cyan-500/20 rounded-full flex items-center justify-center mb-4 mx-auto sm:mx-0">
+              <DollarSign className="w-8 h-8 text-cyan-400" />
             </div>
+            <Button variant="outline" size="sm" onClick={goToPayment}>
+              View Details
+            </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Quick Actions */}
-      <section>
-        <h2 className="text-xl font-semibold text-white mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          <Button
-            variant="outline"
-            className="h-24 flex-col space-y-2 bg-slate-900/30 border-slate-800 hover:border-cyan-500/50"
-            onClick={goToPayment}
-          >
-            <Send className="w-6 h-6 text-cyan-400" />
-            <span>Send Money</span>
-          </Button>
-          <Button
-            variant="outline"
-            className="h-24 flex-col space-y-2 bg-slate-900/30 border-slate-800 hover:border-cyan-500/50"
-            onClick={goToPayment}
-          >
-            <Download className="w-6 h-6 text-cyan-400" />
-            <span>Request Money</span>
-          </Button>
-          <Button
-            variant="outline"
-            className="h-24 flex-col space-y-2 bg-slate-900/30 border-slate-800 hover:border-cyan-500/50"
-            onClick={goToTransactions}
-          >
-            <Eye className="w-6 h-6 text-cyan-400" />
-            <span>View Transactions</span>
-          </Button>
-        </div>
-      </section>
-
-      {/* Stats Grid */}
+      {/* Stats */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[
-          {
-            title: "This Month",
-            value: "$4,250",
-            change: "+8.2%",
-            positive: true,
-          },
-          {
-            title: "Sent",
-            value: "$2,150",
-            change: "-3.1%",
-            positive: false,
-          },
-          {
-            title: "Received",
-            value: "$6,400",
-            change: "+15.3%",
-            positive: true,
-          },
-          {
-            title: "Transactions",
-            value: "47",
-            change: "+12.0%",
-            positive: true,
-          },
-        ].map((stat, i) => (
+        {stats.map((stat, i) => (
           <Card key={i} className="bg-slate-900/30 border-slate-800">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-slate-400">
@@ -182,9 +150,17 @@ export function DashboardPage() {
           </Button>
         </div>
         <div className="space-y-4">
-          {recentTransactions.map((transaction) => (
-            <TransactionRow key={transaction.id} transaction={transaction} />
-          ))}
+          {recentTransactions.length > 0 ? (
+            recentTransactions.map((tx) => (
+              <TransactionRow key={tx.id} transaction={tx} />
+            ))
+          ) : (
+            <Card className="bg-slate-900/30 border-slate-800">
+              <CardContent className="p-12 text-center text-slate-400">
+                No recent transactions
+              </CardContent>
+            </Card>
+          )}
         </div>
       </section>
     </div>
