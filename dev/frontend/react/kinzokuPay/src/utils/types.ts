@@ -29,7 +29,7 @@ export interface Transaction {
   recipient?: string;
   description: string;
   date: string;
-  status: "completed" | "pending" | "failed";
+  status: "pending" | "success" | "failed";
 }
 
 export interface AuthenticatedLayoutProps {

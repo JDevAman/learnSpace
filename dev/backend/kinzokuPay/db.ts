@@ -104,8 +104,12 @@ const transactionSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "completed", "rejected", "success"], // Added 'success' for direct transfers
+      enum: ["pending", "success", "failed"], // Added 'success' for direct transfers
       default: "pending",
+    },
+    description: {
+      type: String, // Added 'success' for direct transfers
+      default: "null",
     },
     // For money requests - expiration time
     expiresAt: {

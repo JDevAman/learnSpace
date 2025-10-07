@@ -4,7 +4,7 @@ import { Card, CardContent } from "../../components/Card/Card";
 import { Button } from "../../components/Button/Button";
 import { Home, Receipt, ArrowRight, ArrowLeft } from "lucide-react";
 import { useAppNavigation } from "../../utils/useAppNavigation";
-import { api } from "../../utils/api";
+import { api } from "../../api/api";
 import { Transaction } from "../../utils/types";
 
 export function TransactionDetailsPage() {
@@ -91,9 +91,7 @@ export function TransactionDetailsPage() {
           <h1 className="text-3xl font-semibold text-white mb-2">
             Transaction Details
           </h1>
-          <p className="text-slate-400 text-sm">
-            {transaction.description || "Payment transaction"}
-          </p>
+          <p className="text-slate-400 text-sm">{transaction.description}</p>
         </div>
 
         {/* Transaction Card */}
@@ -152,12 +150,11 @@ export function TransactionDetailsPage() {
               <span className="text-slate-400 text-sm">Status</span>
               <span
                 className={`font-medium px-3 py-1 rounded-full text-xs uppercase tracking-wide ${
-                  transaction.status === "completed"
+                  transaction.status === "success"
                     ? "bg-green-500/20 text-green-400 border border-green-500/30"
                     : transaction.status === "pending"
                     ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
-                    : transaction.status === "failed" ||
-                      transaction.status === "rejected"
+                    : transaction.status === "failed"
                     ? "bg-red-500/20 text-red-400 border border-red-500/30"
                     : "bg-slate-500/20 text-slate-300 border border-slate-500/30"
                 }`}

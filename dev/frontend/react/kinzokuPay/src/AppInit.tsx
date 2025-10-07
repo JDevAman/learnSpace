@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useAppDispatch } from "./store/hooks";
 import { setUser } from "./store/slices/authSlice";
-import { api } from "./utils/api";
+import { api } from "./api/api";
 
 export function AppInit() {
   const dispatch = useAppDispatch();

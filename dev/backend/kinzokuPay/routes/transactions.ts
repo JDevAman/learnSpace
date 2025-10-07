@@ -2,6 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import { TransactionModel } from "../db";
 import authenticate from "../middlewares/authMiddleware";
+import { Parser } from "json2csv";
 
 const transactionRouter = express.Router();
 
@@ -75,6 +76,62 @@ transactionRouter.get("/", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+transactionRouter.get("/export", async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { filter = "all", search = "", from, to } = req.query;
+
+    const query: any = { $or: [{ from: userId }, { to: userId }] };
+
+    if (filter === "sent") query.from = userId;
+    if (filter === "received") query.to = userId;
+    if (filter === "pending") query.status = "pending";
+
+    if (search) {
+      const searchRegex = new RegExp(search.toString(), "i");
+      query.$or = [
+        { ...query.$or[0], description: searchRegex },
+        { ...query.$or[0], "from.firstName": searchRegex },
+        { ...query.$or[0], "to.firstName": searchRegex },
+      ];
+    }
+
+    if (from || to) {
+      query.createdAt = {};
+      if (from) query.createdAt.$gte = new Date(from.toString());
+      if (to) query.createdAt.$lte = new Date(to.toString());
+    }
+
+    const transactions = await TransactionModel.find(query)
+      .populate("from", "firstName lastName userName")
+      .populate("to", "firstName lastName userName")
+      .sort({ createdAt: -1 });
+
+    // Transform for export
+    const exportData = transactions.map((t) => ({
+      id: t._id.toString(),
+      type: t.type,
+      status: t.status,
+      amount: t.amount / 100,
+      description: t.description || "",
+      sender: t.from ? `${t.from.firstName} ${t.from.lastName}` : "",
+      recipient: t.to ? `${t.to.firstName} ${t.to.lastName}` : "",
+      date: t.createdAt.toISOString(),
+    }));
+
+    // Convert to CSV
+    const json2csvParser = new Parser();
+    const csv = json2csvParser.parse(exportData);
+
+    res.header("Content-Type", "text/csv");
+    res.attachment("transactions.csv");
+    return res.send(csv);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to export transactions" });
   }
 });
 

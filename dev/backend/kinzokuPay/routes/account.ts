@@ -28,7 +28,7 @@ accountRouter.post("/transfer", authenticate, async (req, res, next) => {
     if (!parsed.success) throwError("Invalid input data!", 422);
 
     const from = req.user.id;
-    const { recipient, amount } = parsed.data; 
+    const { recipient, amount, description } = parsed.data;
 
     const to = await getUserIdByEmail(recipient);
     if (from === to.toString()) throwError("Cannot transfer to yourself", 400);
@@ -61,6 +61,7 @@ accountRouter.post("/transfer", authenticate, async (req, res, next) => {
       amount,
       type: "transfer",
       status: "success",
+      description,
       session,
     });
 
@@ -84,7 +85,7 @@ accountRouter.post("/request", authenticate, async (req, res, next) => {
     if (!parsed.success) throwError("Invalid input data!", 422);
 
     const from = req.user.id;
-    const { recipient, amount } = parsed.data; // amount in paise
+    const { recipient, amount, description } = parsed.data; // amount in paise
     const to = await getUserIdByEmail(recipient);
 
     if (from === to.toString())
@@ -100,6 +101,7 @@ accountRouter.post("/request", authenticate, async (req, res, next) => {
       from,
       to,
       amount,
+      description,
       type: "request",
       status: "pending",
       session: null,
@@ -242,6 +244,7 @@ accountRouter.put("/add-money", authenticate, async (req, res, next) => {
       from: null,
       to: userId,
       amount,
+      description: "Added Money",
       type: "add",
       status: "success",
       session,

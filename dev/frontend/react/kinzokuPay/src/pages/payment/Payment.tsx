@@ -12,7 +12,7 @@ import { useAppNavigation } from "../../utils/useAppNavigation";
 import { regex } from "../../../shared/validators";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { addToast } from "../../store/slices/uiSlice";
-import { api } from "../../utils/api";
+import { api } from "../../api/api";
 import { setAddMoneyAmount, setBalance } from "../../store/slices/paymentSlice";
 
 export function PaymentPage() {

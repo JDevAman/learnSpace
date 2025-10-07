@@ -8,7 +8,7 @@ import { useAppNavigation } from "../../utils/useAppNavigation";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { setUser } from "../../store/slices/authSlice";
 import { TabButton } from "../../components/Button/TabButton";
-import { api } from "../../utils/api";
+import { api } from "../../api/api";
 import { useOAuth } from "../../utils/useOAuth";
 import { GoogleIcon } from "../../components/icons/GoogleIcon";
 import { regex } from "../../../shared/validators";

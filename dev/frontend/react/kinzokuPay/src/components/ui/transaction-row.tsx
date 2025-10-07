@@ -14,7 +14,6 @@ interface TransactionRowProps {
 
 export function TransactionRow({ transaction }: TransactionRowProps) {
   const { goToTransactionDetails } = useAppNavigation();
-console.log(transaction);
   const getStatusIcon = () => {
     switch (transaction.status) {
       case "success":
@@ -92,7 +91,7 @@ console.log(transaction);
       </div>
       <div className="text-right">
         <p className={`font-semibold ${getAmountColor()}`}>
-          {getAmountPrefix()}₹{(transaction.amount).toFixed(2)}
+          {getAmountPrefix()}₹{transaction.amount.toFixed(2)}
         </p>
         <p className="text-xs text-slate-500 capitalize">
           {transaction.status}

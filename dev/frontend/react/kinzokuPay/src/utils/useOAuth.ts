@@ -1,9 +1,9 @@
 import { useCallback } from "react";
 import { useAppDispatch } from "../store/hooks";
 import { setUser } from "../store/slices/authSlice";
-import { api, baseUrl } from "./api";
+import { api, baseUrl } from "../api/api";
 import { useAppNavigation } from "./useAppNavigation";
-import { backendUrl } from "./api";
+import { backendUrl } from "../api/api";
 
 export function useOAuth() {
   const dispatch = useAppDispatch();
