@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import {
   Card,
   CardContent,
@@ -10,17 +11,28 @@ import { TrendingUp, TrendingDown, DollarSign } from "lucide-react";
 import { Button } from "../../components/Button/Button";
 import { useAppNavigation } from "../../utils/useAppNavigation";
 import { fetchDashboardStatsAPI } from "../../api/dashboardService";
+import { setBalance } from "../../store/slices/paymentSlice";
+import { RootState } from "../../store/store";
 
 export function DashboardPage() {
   const { goToPayment, goToTransactions } = useAppNavigation();
+  const dispatch = useAppDispatch();
 
-  const [balance, setBalance] = useState(0);
+  // --- Redux balance
+  const balance = useAppSelector((state: RootState) => state.payment.balance);
+
+  // --- Local state for dashboard stats and transactions
   const [previousBalance, setPreviousBalance] = useState(0);
   const [stats, setStats] = useState([
     { title: "This Month", value: 0, positive: true, change: "0%" },
     { title: "Sent", value: 0, positive: true, change: "0%" },
     { title: "Received", value: 0, positive: true, change: "0%" },
-    { title: "Transactions", value: 0, positive: true, change: "0%" },
+    {
+      title: "Transactions",
+      value: 0,
+      positive: true,
+      change: "0%",
+    },
   ]);
   const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
 
@@ -29,12 +41,11 @@ export function DashboardPage() {
       try {
         const data = await fetchDashboardStatsAPI();
 
-        setBalance(data.balance ?? 0);
-        setPreviousBalance(data.previousBalance ?? 0);
+        // Update Redux balance
+        dispatch(setBalance(data.balance ?? 0));
 
-        const balanceChange = data.previousBalance
-          ? ((data.balance - data.previousBalance) / data.previousBalance) * 100
-          : 0;
+        // Keep previous balance for percentage calculation
+        setPreviousBalance(data.previousBalance ?? 0);
 
         setStats([
           {
@@ -70,7 +81,7 @@ export function DashboardPage() {
     }
 
     fetchData();
-  }, []);
+  }, [dispatch]);
 
   const balanceChange = previousBalance
     ? ((balance - previousBalance) / previousBalance) * 100
@@ -78,6 +89,7 @@ export function DashboardPage() {
 
   return (
     <div className="min-h-screen w-full bg-black px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+      {/* Balance Card */}
       <Card className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border-cyan-500/20 shadow-md">
         <CardContent className="p-8 flex justify-between items-center">
           <div>
@@ -120,7 +132,7 @@ export function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-semibold text-white mb-1">
-                {stat.value}
+                {stat.title !== "Transactions" ? `₹${stat.value}` : stat.value}
               </div>
               <div
                 className={`flex items-center text-sm ${
