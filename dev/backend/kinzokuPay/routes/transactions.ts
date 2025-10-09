@@ -3,70 +3,32 @@ import mongoose from "mongoose";
 import { TransactionModel } from "../db";
 import authenticate from "../middlewares/authMiddleware";
 import { Parser } from "json2csv";
+import { formatTransaction } from "../utils/formatTransaction";
 
 const transactionRouter = express.Router();
-
-// Protect all routes
 transactionRouter.use(authenticate);
 
-/**
- * GET /transactions
- * Query params: filter (all|sent|received|pending), search, limit, skip
- * Returns: { transactions: [], total, limit, skip }
- */
+// GET list
 transactionRouter.get("/", async (req, res) => {
   try {
     const userId = req.user.id;
     const { filter = "all", search = "", limit = "20", skip = "0" } = req.query;
 
     const query: any = { $or: [{ from: userId }, { to: userId }] };
-
     if (filter === "sent") query.from = userId;
     if (filter === "received") query.to = userId;
     if (filter === "pending") query.status = "pending";
 
-    // Handle search by description / sender / recipient
-    if (search) {
-      const searchRegex = new RegExp(search.toString(), "i");
-      query.$or = [
-        { ...query.$or[0], description: searchRegex },
-        { ...query.$or[0], "from.firstName": searchRegex },
-        { ...query.$or[0], "to.firstName": searchRegex },
-      ];
-    }
-
-    // Total count for infinite scroll
     const total = await TransactionModel.countDocuments(query);
 
     const transactions = await TransactionModel.find(query)
-      .populate("from", "firstName lastName userName")
-      .populate("to", "firstName lastName userName")
+      .populate("from", "firstName lastName email")
+      .populate("to", "firstName lastName email")
       .sort({ createdAt: -1 })
       .skip(Number(skip))
       .limit(Number(limit));
 
-    const result = transactions.map((t) => {
-      const type =
-        t.type === "transfer"
-          ? t.from._id.toString() === userId
-            ? "sent"
-            : "received"
-          : t.type === "add"
-          ? "received"
-          : t.type;
-
-      return {
-        id: t._id,
-        type,
-        amount: t.amount / 100,
-        description: t.description || "",
-        sender: t.from ? `${t.from.firstName} ${t.from.lastName}` : null,
-        recipient: t.to ? `${t.to.firstName} ${t.to.lastName}` : null,
-        date: t.createdAt,
-        status: t.status,
-      };
-    });
-
+    const result = transactions.map((t) => formatTransaction(t, userId));
     res.json({
       transactions: result,
       total,
@@ -79,96 +41,47 @@ transactionRouter.get("/", async (req, res) => {
   }
 });
 
-transactionRouter.get("/export", async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const { filter = "all", search = "", from, to } = req.query;
-
-    const query: any = { $or: [{ from: userId }, { to: userId }] };
-
-    if (filter === "sent") query.from = userId;
-    if (filter === "received") query.to = userId;
-    if (filter === "pending") query.status = "pending";
-
-    if (search) {
-      const searchRegex = new RegExp(search.toString(), "i");
-      query.$or = [
-        { ...query.$or[0], description: searchRegex },
-        { ...query.$or[0], "from.firstName": searchRegex },
-        { ...query.$or[0], "to.firstName": searchRegex },
-      ];
-    }
-
-    if (from || to) {
-      query.createdAt = {};
-      if (from) query.createdAt.$gte = new Date(from.toString());
-      if (to) query.createdAt.$lte = new Date(to.toString());
-    }
-
-    const transactions = await TransactionModel.find(query)
-      .populate("from", "firstName lastName userName")
-      .populate("to", "firstName lastName userName")
-      .sort({ createdAt: -1 });
-
-    // Transform for export
-    const exportData = transactions.map((t) => ({
-      id: t._id.toString(),
-      type: t.type,
-      status: t.status,
-      amount: t.amount / 100,
-      description: t.description || "",
-      sender: t.from ? `${t.from.firstName} ${t.from.lastName}` : "",
-      recipient: t.to ? `${t.to.firstName} ${t.to.lastName}` : "",
-      date: t.createdAt.toISOString(),
-    }));
-
-    // Convert to CSV
-    const json2csvParser = new Parser();
-    const csv = json2csvParser.parse(exportData);
-
-    res.header("Content-Type", "text/csv");
-    res.attachment("transactions.csv");
-    return res.send(csv);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to export transactions" });
-  }
-});
-
-/**
- * GET /transactions/:id
- * Returns a single transaction detail
- */
+// GET single transaction
 transactionRouter.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id))
       return res.status(400).json({ error: "Invalid transaction ID" });
 
-    const transaction = await TransactionModel.findById(id)
-      .populate("from", "firstName lastName userName")
-      .populate("to", "firstName lastName userName");
+    const t = await TransactionModel.findById(id)
+      .populate("from", "firstName lastName email")
+      .populate("to", "firstName lastName email");
 
-    if (!transaction) return res.status(404).json({ error: "Not found" });
-    res.json({
-      id: transaction._id,
-      type: transaction.type,
-      amount: transaction.amount / 100,
-      description: transaction.description || "",
-      sender: transaction.from
-        ? `${transaction.from.firstName} ${transaction.from.lastName}`
-        : null,
-      recipient: transaction.to
-        ? `${transaction.to.firstName} ${transaction.to.lastName}`
-        : null,
-      status: transaction.status,
-      date: transaction.createdAt,
-      fee: 0,
-      total: transaction.amount / 100,
-    });
+    if (!t) return res.status(404).json({ error: "Transaction not found" });
+
+    res.json(formatTransaction(t, req.user.id));
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// GET /export
+transactionRouter.get("/export", async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const transactions = await TransactionModel.find({
+      $or: [{ from: userId }, { to: userId }],
+    })
+      .populate("from", "firstName lastName email")
+      .populate("to", "firstName lastName email")
+      .sort({ createdAt: -1 });
+
+    const exportData = transactions.map((t) => formatTransaction(t, userId));
+    const parser = new Parser();
+    const csv = parser.parse(exportData);
+
+    res.header("Content-Type", "text/csv");
+    res.attachment("transactions.csv");
+    res.send(csv);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to export transactions" });
   }
 });
 

@@ -16,6 +16,7 @@ import { FeaturesPage } from "./pages/features/features";
 import { TransactionDetailsPage } from "./pages/transaction/TransactionDetail";
 import ProfilePage from "./pages/profile/Profile";
 import { AppInit } from "./AppInit";
+import { RequestsPage } from "./pages/request/RequestPage";
 
 function AppRoutes() {
   return (
@@ -40,6 +41,7 @@ function AppRoutes() {
           <Route path="payment" element={<PaymentPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="dashboard" element={<DashboardPage />} />
+          <Route path="request" element={<RequestsPage />} />
           <Route path="transaction" element={<TransactionsPage />} />
           <Route
             path="/transactions/:id"

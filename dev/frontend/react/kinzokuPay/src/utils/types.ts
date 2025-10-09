@@ -21,15 +21,17 @@ export interface SupportOption {
   color: string;
 }
 
-export interface Transaction {
+export interface MoneyFlow {
   id: string;
-  type: "sent" | "received" | "pending";
-  amount: number;
-  sender?: string;
-  recipient?: string;
-  description: string;
-  date: string;
-  status: "pending" | "success" | "failed";
+  type: "transfer" | "request" | "add"; // transfer = send/receive, request, add = add money
+  amount: number; // in paise
+  status: "pending" | "success" | "failed" | "rejected" | "cancelled";
+  from?: string; // userId or email (sender)
+  to?: string; // userId or email (recipient)
+  description?: string;
+  expiresAt?: string; // only for requests
+  createdAt: string;
+  finalizedAt?: string | null;
 }
 
 export interface AuthenticatedLayoutProps {

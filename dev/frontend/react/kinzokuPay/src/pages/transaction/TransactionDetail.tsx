@@ -5,12 +5,12 @@ import { Button } from "../../components/Button/Button";
 import { Home, Receipt, ArrowRight, ArrowLeft } from "lucide-react";
 import { useAppNavigation } from "../../utils/useAppNavigation";
 import { api } from "../../api/api";
-import { Transaction } from "../../utils/types";
+import { MoneyFlow } from "../../utils/types";
 
 export function TransactionDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const { goToDashboard, goToPayment, goToTransactions } = useAppNavigation();
-  const [transaction, setTransaction] = useState<Transaction | null>(null);
+  const [transaction, setTransaction] = useState<MoneyFlow | null>(null);
   const [loading, setLoading] = useState(true);
   const [showAnimation, setShowAnimation] = useState(false);
 
@@ -18,6 +18,7 @@ export function TransactionDetailsPage() {
     const fetchTransaction = async () => {
       try {
         const res = await api.get(`/transactions/${id}`);
+        console.log(res.data)
         setTransaction(res.data);
       } catch (err) {
         console.error("Error fetching transaction", err);
@@ -66,8 +67,6 @@ export function TransactionDetailsPage() {
 
   // Convert amount from paise to rupees
   const amountInRupees = transaction.amount.toFixed(2);
-  const feeInRupees = transaction.fee.toFixed(2);
-  const totalInRupees = transaction.total.toFixed(2);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-black flex items-center justify-center px-4 py-12">
@@ -123,28 +122,28 @@ export function TransactionDetailsPage() {
                 ₹{amountInRupees}
               </span>
             </div>
-
+{/* 
             <div className="flex justify-between">
               <span className="text-slate-400 text-sm">Processing Fee</span>
               <span className="text-slate-300">₹{feeInRupees}</span>
-            </div>
+            </div> */}
 
             <div className="flex justify-between">
               <span className="text-slate-400 text-sm">Date & Time</span>
               <span className="text-white text-sm">
-                {new Date(transaction.date).toLocaleString("en-IN", {
+                {new Date(transaction.finalizedAt).toLocaleString("en-IN", {
                   dateStyle: "medium",
                   timeStyle: "short",
                 })}
               </span>
             </div>
 
-            <div className="border-t border-slate-700/50 pt-4 flex justify-between items-center">
+            {/* <div className="border-t border-slate-700/50 pt-4 flex justify-between items-center">
               <span className="text-slate-300 font-medium">Total Amount</span>
               <span className="text-cyan-400 font-semibold text-2xl">
                 ₹{totalInRupees}
               </span>
-            </div>
+            </div> */}
 
             <div className="border-t border-slate-700/50 pt-4 flex justify-between items-center">
               <span className="text-slate-400 text-sm">Status</span>

@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import {
   LayoutDashboard,
@@ -12,6 +10,7 @@ import {
   LogOut,
   ChevronUp,
   X,
+  HandCoins,
 } from "lucide-react";
 import { cn } from "../../utils/utils";
 import { Button } from "../Button/Button";
@@ -19,6 +18,7 @@ import { SidebarProps } from "../../utils/types";
 import { useAppNavigation } from "../../utils/useAppNavigation";
 import { useIsMobile } from "../../utils/useMobile";
 import { useSelector } from "react-redux";
+import { RootState } from "../../store/store";
 
 export function Sidebar({
   mobileOpen = false,
@@ -34,13 +34,20 @@ export function Sidebar({
 
   const reduxUser = useSelector((state: RootState) => state.auth.user);
   const fullName = reduxUser.firstName + " " + reduxUser.lastName;
-  const { goToDashboard, goToPayment, goToTransactions, goToProfile, logout } =
-    useAppNavigation();
+  const {
+    goToDashboard,
+    goToPayment,
+    goToTransactions,
+    goToProfile,
+    goToRequests,
+    logout,
+  } = useAppNavigation();
 
   const navigation = [
     { name: "Dashboard", onClick: goToDashboard, icon: LayoutDashboard },
     { name: "Payment", onClick: goToPayment, icon: CreditCard },
     { name: "Transactions", onClick: goToTransactions, icon: History },
+    { name: "Requests", onClick: goToRequests, icon: HandCoins },
   ];
 
   const handleNavClick = (onClick?: () => void) => {
@@ -206,7 +213,7 @@ export function Sidebar({
                   )}
                 >
                   <p className="text-sm font-medium text-white truncate">
-                    {fullName?? "Guest"}
+                    {fullName ?? "Guest"}
                   </p>
                   <p className="text-xs text-slate-400 truncate">
                     {reduxUser?.email ?? "guest@example.com"}

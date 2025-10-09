@@ -12,16 +12,13 @@ import { useAppNavigation } from "../../utils/useAppNavigation";
 import { regex } from "../../../shared/validators";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { addToast } from "../../store/slices/uiSlice";
-import { api } from "../../api/api";
-import { setAddMoneyAmount, setBalance } from "../../store/slices/paymentSlice";
+import { paymentService } from "../../api/paymentService";
+import { setBalance } from "../../store/slices/moneyFlowSlice";
 
 export function PaymentPage() {
-  const { goToSuccess } = useAppNavigation();
+  const { goToTransactions, goToRequests } = useAppNavigation();
   const dispatch = useAppDispatch();
-  const addMoneyAmount = useAppSelector(
-    (state) => state.payment.addMoneyAmount
-  );
-  const balance = useAppSelector((state) => state.payment.balance);
+  const balance = useAppSelector((state) => state.moneyFlow.balance);
 
   const [activeTab, setActiveTab] = useState<"pay" | "request" | "add">("pay");
   const [loading, setLoading] = useState(false);
@@ -32,14 +29,16 @@ export function PaymentPage() {
     note: "",
   });
 
+  const [addMoneyInput, setAddMoneyInput] = useState("");
+  const parsedAddMoney = parseFloat(addMoneyInput);
+
   const [errors, setErrors] = useState({
     recipient: "",
     amount: "",
     addMoney: "",
   });
 
-  // Sanitize amount helper
-  const sanitizeAmount = (value: string): string => {
+  const sanitizeAmount = (value: string) => {
     let sanitized = value.replace(/[^\d.]/g, "");
     const parts = sanitized.split(".");
     if (parts.length > 2) sanitized = parts[0] + "." + parts[1];
@@ -47,87 +46,57 @@ export function PaymentPage() {
     return sanitized;
   };
 
-  // Validate amount helper
-  const validateAmount = (
-    value: string,
-    field: "amount" | "addMoney"
-  ): void => {
-    if (!value) {
-      setErrors((e) => ({ ...e, [field]: "Amount is required" }));
-    } else if (!regex.amount.test(value)) {
+  const validateAmount = (value: string, field: "amount" | "addMoney") => {
+    if (!value) setErrors((e) => ({ ...e, [field]: "Amount is required" }));
+    else if (!regex.amount.test(value))
       setErrors((e) => ({
         ...e,
         [field]: "Enter a valid amount (up to 2 decimals)",
       }));
-    } else if (parseFloat(value) <= 0) {
-      setErrors((e) => ({
-        ...e,
-        [field]: "Amount must be greater than 0",
-      }));
-    } else {
-      setErrors((e) => ({ ...e, [field]: "" }));
-    }
+    else if (parseFloat(value) <= 0)
+      setErrors((e) => ({ ...e, [field]: "Amount must be greater than 0" }));
+    else setErrors((e) => ({ ...e, [field]: "" }));
   };
 
-  // Handle payment form input changes
   const handleInputChange = (field: string, value: string) => {
     if (field === "recipient") {
       setPaymentData((prev) => ({ ...prev, recipient: value }));
-
-      if (!value.trim()) {
+      if (!value.trim())
         setErrors((e) => ({ ...e, recipient: "Email is required" }));
-      } else if (!regex.email.test(value.trim())) {
+      else if (!regex.email.test(value.trim()))
         setErrors((e) => ({ ...e, recipient: "Invalid email address" }));
-      } else {
-        setErrors((e) => ({ ...e, recipient: "" }));
-      }
+      else setErrors((e) => ({ ...e, recipient: "" }));
     }
-
     if (field === "amount") {
       const sanitized = sanitizeAmount(value);
       setPaymentData((prev) => ({ ...prev, amount: sanitized }));
       validateAmount(sanitized, "amount");
     }
-
-    if (field === "note") {
-      setPaymentData((prev) => ({ ...prev, note: value }));
-    }
+    if (field === "note") setPaymentData((prev) => ({ ...prev, note: value }));
   };
 
-  // Handle add money input changes
-  const [addMoneyInput, setAddMoneyInput] = useState<string>("");
-
   const handleAddMoneyChange = (value: string) => {
-    const sanitized = sanitizeAmount(value); // same as amount
-    setAddMoneyInput(sanitized); // raw input
-
-    if (!sanitized) {
-      setErrors((e) => ({ ...e, addMoney: "Amount is required" }));
-      dispatch(setAddMoneyAmount(0));
-    } else if (!regex.amount.test(sanitized)) {
-      setErrors((e) => ({
-        ...e,
-        addMoney: "Enter a valid amount (up to 2 decimals)",
-      }));
-      dispatch(setAddMoneyAmount(0));
-    } else if (parseFloat(sanitized) <= 0) {
-      setErrors((e) => ({ ...e, addMoney: "Amount must be greater than 0" }));
-      dispatch(setAddMoneyAmount(0));
+    const sanitized = sanitizeAmount(value);
+    setAddMoneyInput(sanitized);
+    if (
+      !sanitized ||
+      !regex.amount.test(sanitized) ||
+      parseFloat(sanitized) <= 0
+    ) {
+      setErrors((e) => ({ ...e, addMoney: "Enter a valid amount" }));
     } else {
       setErrors((e) => ({ ...e, addMoney: "" }));
-      dispatch(setAddMoneyAmount(parseFloat(sanitized)));
     }
   };
 
   const isFormValid =
     !errors.recipient &&
     !errors.amount &&
-    paymentData.recipient.trim().length > 0 &&
-    paymentData.amount.trim().length > 0;
+    paymentData.recipient.trim() &&
+    paymentData.amount.trim();
 
-  const isAddMoneyValid = !errors.addMoney && addMoneyAmount > 0;
+  const isAddMoneyValid = !errors.addMoney && parsedAddMoney > 0;
 
-  // Submit send/request
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isFormValid) {
@@ -140,17 +109,14 @@ export function PaymentPage() {
       );
       return;
     }
-
     setLoading(true);
-    const endpoint =
-      activeTab === "pay" ? "/payments/transfer" : "/payments/request";
-
     try {
       const payload = {
         ...paymentData,
         amount: Math.round(parseFloat(paymentData.amount)),
       };
-      await api.post(endpoint, payload);
+      if (activeTab === "pay") await paymentService.sendPayment(payload);
+      else await paymentService.requestPayment(payload);
 
       dispatch(
         addToast({
@@ -165,7 +131,7 @@ export function PaymentPage() {
         })
       );
 
-      goToSuccess();
+      activeTab === "pay" ? goToTransactions() : goToRequests();
       setPaymentData({ recipient: "", amount: "", note: "" });
       setErrors({ recipient: "", amount: "", addMoney: "" });
     } catch (err: any) {
@@ -183,12 +149,11 @@ export function PaymentPage() {
     }
   };
 
-  // Check balance
   const handleCheckBalance = async () => {
     setLoading(true);
     try {
-      const { data } = await api.get("/payments/balance");
-      dispatch(setBalance(data.balance ));
+      const balance = await paymentService.getBalance();
+      dispatch(setBalance(balance));
     } catch {
       dispatch(
         addToast({
@@ -202,24 +167,18 @@ export function PaymentPage() {
     }
   };
 
-  // Add money
   const handleAddMoney = async () => {
     if (!isAddMoneyValid) return;
-
     setLoading(true);
     try {
-      await api.put("/payments/add-money", {
-        amount: Math.round(addMoneyAmount),
-      });
-
+      await paymentService.addMoney(Math.round(parsedAddMoney));
       dispatch(
         addToast({
           title: "Money Added",
-          description: `₹${addMoneyAmount.toFixed(2)} added to your account.`,
+          description: `₹${parsedAddMoney.toFixed(2)} added to your account.`,
         })
       );
-
-      dispatch(setAddMoneyAmount(0));
+      setAddMoneyInput("");
       setErrors((e) => ({ ...e, addMoney: "" }));
       await handleCheckBalance();
     } catch {
@@ -240,7 +199,6 @@ export function PaymentPage() {
     { id: "request", label: "Request Money", icon: Download },
     { id: "add", label: "Add Money", icon: Plus },
   ];
-
   const ActiveIcon = tabs.find((tab) => tab.id === activeTab)?.icon;
 
   return (
@@ -284,7 +242,7 @@ export function PaymentPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {activeTab === "pay" || activeTab === "request" ? (
+              {(activeTab === "pay" || activeTab === "request") && (
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <InputField
                     type="email"
@@ -328,30 +286,27 @@ export function PaymentPage() {
                       : `Request ₹${paymentData.amount || "0.00"}`}
                   </Button>
                 </form>
-              ) : (
+              )}
+              {activeTab === "add" && (
                 <div className="space-y-6 py-4">
                   <InputField
                     type="text"
                     label="Add Money"
                     placeholder="0.00"
-                    value={addMoneyInput} // raw string state
+                    value={addMoneyInput}
                     onChange={(e) => handleAddMoneyChange(e.target.value)}
                     error={errors.addMoney}
                   />
                   <Button
                     onClick={handleAddMoney}
-                    disabled={!addMoneyAmount || !!errors.addMoney || loading}
-                    variant={
-                      !errors.addMoney && addMoneyAmount > 0
-                        ? "glow"
-                        : "default"
-                    }
+                    disabled={!isAddMoneyValid || loading}
+                    variant={isAddMoneyValid ? "glow" : "default"}
                     className="w-full"
                   >
                     {loading
                       ? "Processing..."
                       : `Add ₹${
-                          addMoneyAmount ? addMoneyAmount.toFixed(2) : "0.00"
+                          parsedAddMoney ? parsedAddMoney.toFixed(2) : "0.00"
                         }`}
                   </Button>
                 </div>

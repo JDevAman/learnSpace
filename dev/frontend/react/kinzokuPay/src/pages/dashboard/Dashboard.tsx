@@ -6,12 +6,12 @@ import {
   CardHeader,
   CardTitle,
 } from "../../components/Card/Card";
-import { TransactionRow } from "../../components/ui/transaction-row";
+import { TransactionRow } from "../../components/ui/transactionRow";
 import { TrendingUp, TrendingDown, DollarSign } from "lucide-react";
 import { Button } from "../../components/Button/Button";
 import { useAppNavigation } from "../../utils/useAppNavigation";
 import { fetchDashboardStatsAPI } from "../../api/dashboardService";
-import { setBalance } from "../../store/slices/paymentSlice";
+import { setBalance } from "../../store/slices/moneyFlowSlice";
 import { RootState } from "../../store/store";
 
 export function DashboardPage() {
@@ -19,7 +19,7 @@ export function DashboardPage() {
   const dispatch = useAppDispatch();
 
   // --- Redux balance
-  const balance = useAppSelector((state: RootState) => state.payment.balance);
+  const balance = useAppSelector((state: RootState) => state.moneyFlow.balance);
 
   // --- Local state for dashboard stats and transactions
   const [previousBalance, setPreviousBalance] = useState(0);
@@ -40,7 +40,7 @@ export function DashboardPage() {
     async function fetchData() {
       try {
         const data = await fetchDashboardStatsAPI();
-
+        console.log(data);
         // Update Redux balance
         dispatch(setBalance(data.balance ?? 0));
 

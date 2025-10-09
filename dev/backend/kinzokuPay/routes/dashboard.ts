@@ -1,99 +1,50 @@
 import express from "express";
 import { TransactionModel } from "../db";
 import authenticate from "../middlewares/authMiddleware";
-import mongoose from "mongoose";
+import { formatTransaction } from "../utils/formatTransaction";
 
 const dashboardRouter = express.Router();
-
-// Protect all routes
 dashboardRouter.use(authenticate);
 
-/**
- * GET /dashboard/stats
- * Returns:
- * {
- *   balance: number,
- *   previousBalance: number,
- *   thisMonth: number,
- *   thisMonthChange: number,
- *   sent: number,
- *   sentChange: number,
- *   received: number,
- *   receivedChange: number,
- *   transactions: number,
- *   transactionsChange: number,
- *   recentTransactions: Array
- * }
- */
+// dashboard route
 dashboardRouter.get("/stats", async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // --- Fetch all user-related transactions
     const transactions = await TransactionModel.find({
       $or: [{ from: userId }, { to: userId }],
     })
-      .populate("from", "firstName lastName")
-      .populate("to", "firstName lastName")
-      .sort({ createdAt: -1 });
+      .populate("from", "firstName lastName email")
+      .populate("to", "firstName lastName email")
+      .sort({ createdAt: -1 })
+      .lean(); // convert Mongoose docs to plain JS objects
 
-    // --- Helper to safely get amount in units
     const amount = (t: any) => (t.amount ? t.amount / 100 : 0);
 
-    // --- Compute current balance
     let balance = 0;
-    transactions.forEach((t: any) => {
-      if (t.type === "transfer") {
-        balance += t.to?._id?.toString() === userId ? amount(t) : -amount(t);
-      } else if (t.type === "add") {
-        balance += amount(t);
-      } else if (t.type === "withdraw") {
-        balance -= amount(t);
-      }
-    });
-
-    // --- Compute previous month balance
+    let previousBalance = 0;
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const startOfPrevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const endOfPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
 
-    let previousBalance = 0;
     transactions.forEach((t: any) => {
+      const val =
+        t.type === "transfer"
+          ? t.to?._id.toString() === userId
+            ? amount(t)
+            : -amount(t)
+          : amount(t);
+
+      balance += val;
+
       if (t.createdAt < startOfMonth) {
-        if (t.type === "transfer") {
-          previousBalance +=
-            t.to?._id?.toString() === userId ? amount(t) : -amount(t);
-        } else if (t.type === "add") {
-          previousBalance += amount(t);
-        } else if (t.type === "withdraw") {
-          previousBalance -= amount(t);
-        }
+        previousBalance += val;
       }
     });
 
-    // --- Recent 5 transactions
-    const recentTransactions = transactions.slice(0, 5).map((t: any) => {
-      const type =
-        t.type === "transfer"
-          ? t.from?._id?.toString() === userId
-            ? "sent"
-            : "received"
-          : t.type === "add"
-          ? "received"
-          : t.type;
-
-      return {
-        id: t._id,
-        type,
-        amount: amount(t),
-        description: t.description || "",
-        sender: t.from ? `${t.from.firstName} ${t.from.lastName}` : null,
-        recipient: t.to ? `${t.to.firstName} ${t.to.lastName}` : null,
-        date: t.createdAt,
-        status: t.status,
-      };
-    });
+    // ✅ Await async formatTransaction
+    const recentTransactions = await Promise.all(
+      transactions.slice(0, 5).map((t) => formatTransaction(t, userId))
+    );
 
     res.json({
       balance,
@@ -101,13 +52,13 @@ dashboardRouter.get("/stats", async (req, res) => {
       thisMonth: transactions
         .filter((t) => t.createdAt >= startOfMonth)
         .reduce((sum, t) => sum + amount(t), 0),
-      thisMonthChange: 0, // frontend can calculate ((thisMonth - previousMonth)/previousMonth*100)
+      thisMonthChange: 0,
       sent: transactions
-        .filter((t) => t.from?._id?.toString() === userId)
+        .filter((t) => t.from?._id.toString() === userId)
         .reduce((sum, t) => sum + amount(t), 0),
       sentChange: 0,
       received: transactions
-        .filter((t) => t.to?._id?.toString() === userId || t.type === "add")
+        .filter((t) => t.to?._id.toString() === userId || t.type === "add")
         .reduce((sum, t) => sum + amount(t), 0),
       receivedChange: 0,
       transactions: transactions.length,
@@ -119,5 +70,6 @@ dashboardRouter.get("/stats", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
 
 export default dashboardRouter;

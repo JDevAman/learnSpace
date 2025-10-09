@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../../components/Card/Card";
-import { TransactionRow } from "../../components/ui/transaction-row";
+import { TransactionRow } from "../../components/ui/transactionRow";
 import { Search, Filter, Download } from "lucide-react";
 import { useAppNavigation } from "../../utils/useAppNavigation";
 import {
@@ -16,26 +16,26 @@ import {
   fetchTransactionsAPI,
 } from "../../api/transactionService";
 import {
-  setTransactions,
-  addTransaction,
+  setMoneyFlows,
   setLoading,
   setError,
-} from "../../store/slices/transactionSlice";
+} from "../../store/slices/moneyFlowSlice";
 import { useDebounce } from "../../utils/useDebounce";
-import  saveAs  from "file-saver";
+import saveAs from "file-saver";
 
 const LIMIT = 20;
 
 export function TransactionsPage() {
   const dispatch = useAppDispatch();
-  const { list: transactions, loading } = useAppSelector(
-    (state: any) => state.transaction
-  );
   const { goToPayment } = useAppNavigation();
+  const {
+    list: moneyFlows,
+    loading,
+    balance,
+  } = useAppSelector((state) => state.moneyFlow);
 
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
-
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState<
     "all" | "sent" | "received" | "pending"
@@ -47,8 +47,8 @@ export function TransactionsPage() {
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const statusOptions = ["all", "sent", "received", "pending"];
 
-  // --- Fetch transactions
-  const fetchTransactions = useCallback(
+  // --- Fetch money flows
+  const fetchMoneyFlows = useCallback(
     async (pageNumber = 1) => {
       try {
         dispatch(setLoading(true));
@@ -66,7 +66,7 @@ export function TransactionsPage() {
           params
         );
 
-        dispatch(setTransactions(fetched));
+        dispatch(setMoneyFlows(fetched));
         setTotal(total);
         setPage(pageNumber);
       } catch (err: any) {
@@ -78,35 +78,33 @@ export function TransactionsPage() {
     [activeFilter, debouncedSearchTerm, dispatch, fromDate, toDate]
   );
 
-  // Reset and refetch whenever filters/search change
   useEffect(() => {
-    fetchTransactions(1);
+    fetchMoneyFlows(1);
   }, [activeFilter, debouncedSearchTerm, fromDate, toDate]);
 
   // --- Stats
   const totalSent = useMemo(
     () =>
-      transactions
+      moneyFlows
         .filter((t) => t.type === "sent")
         .reduce((s, t) => s + t.amount, 0),
-    [transactions]
+    [moneyFlows]
   );
   const totalReceived = useMemo(
     () =>
-      transactions
+      moneyFlows
         .filter((t) => t.type === "received")
         .reduce((s, t) => s + t.amount, 0),
-    [transactions]
+    [moneyFlows]
   );
   const pendingAmount = useMemo(
     () =>
-      transactions
+      moneyFlows
         .filter((t) => t.status === "pending")
         .reduce((s, t) => s + t.amount, 0),
-    [transactions]
+    [moneyFlows]
   );
 
-  // --- Export button handler
   const handleExport = async () => {
     try {
       const data = await exportTransactionsAPI({
@@ -116,7 +114,6 @@ export function TransactionsPage() {
         to: toDate,
       });
 
-      // Trigger CSV download
       const blob = new Blob([data], { type: "text/csv;charset=utf-8" });
       saveAs(blob, "transactions.csv");
     } catch (err) {
@@ -189,7 +186,7 @@ export function TransactionsPage() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => fetchTransactions(1)}
+                onClick={() => fetchMoneyFlows(1)}
                 className="h-10"
               >
                 Show Records
@@ -220,6 +217,7 @@ export function TransactionsPage() {
               </div>
             </CardContent>
           </Card>
+
           <Card className="bg-slate-900/30 border-slate-800">
             <CardHeader className="pb-3">
               <CardTitle className="text-slate-400 text-sm font-normal">
@@ -232,6 +230,7 @@ export function TransactionsPage() {
               </div>
             </CardContent>
           </Card>
+
           <Card className="bg-slate-900/30 border-slate-800">
             <CardHeader className="pb-3">
               <CardTitle className="text-slate-400 text-sm font-normal">
@@ -244,6 +243,7 @@ export function TransactionsPage() {
               </div>
             </CardContent>
           </Card>
+
           <Card className="bg-slate-900/30 border-slate-800">
             <CardHeader className="pb-3">
               <CardTitle className="text-slate-400 text-sm font-normal">
@@ -272,30 +272,29 @@ export function TransactionsPage() {
                 <p className="text-slate-400">Loading transactions...</p>
               </CardContent>
             </Card>
-          ) : transactions.length > 0 ? (
+          ) : moneyFlows.length > 0 ? (
             <>
-              {transactions.map((t) => (
+              {moneyFlows.map((t) => (
                 <TransactionRow key={t.id} transaction={t} />
               ))}
 
-              {/* Pagination */}
               <div className="flex justify-center gap-2 mt-4">
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => fetchTransactions(page - 1)}
+                  onClick={() => fetchMoneyFlows(page - 1)}
                   disabled={page === 1}
                 >
                   Prev
                 </Button>
                 <span className="text-white px-2 py-1">
-                  {page} / {Math.ceil(total / LIMIT)}
+                  {page} / {totalPages}
                 </span>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => fetchTransactions(page + 1)}
-                  disabled={page === Math.ceil(total / LIMIT)}
+                  onClick={() => fetchMoneyFlows(page + 1)}
+                  disabled={page === totalPages}
                 >
                   Next
                 </Button>

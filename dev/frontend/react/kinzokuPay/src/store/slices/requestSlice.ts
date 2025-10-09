@@ -5,7 +5,7 @@ export interface Request {
   from: string; // requester email
   to: string; // recipient email
   amount: number; // in paise
-  status: "pending" | "accepted" | "declined" | "cancelled";
+  status: "pending" | "completed" | "rejected";
   date: string;
   note?: string;
 }

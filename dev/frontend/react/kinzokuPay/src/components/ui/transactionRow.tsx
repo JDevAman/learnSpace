@@ -4,16 +4,38 @@ import {
   Clock,
   CheckCircle,
   XCircle,
+  PlusCircle,
 } from "lucide-react";
 import { useAppNavigation } from "../../utils/useAppNavigation";
-import { Transaction } from "../../utils/types";
+import { MoneyFlow } from "../../utils/types";
+import { useAppSelector } from "../../store/hooks";
 
 interface TransactionRowProps {
-  transaction: Transaction;
+  transaction: MoneyFlow; // Needed to detect sent/received for transfers
 }
 
 export function TransactionRow({ transaction }: TransactionRowProps) {
   const { goToTransactionDetails } = useAppNavigation();
+  const currentUserId = useAppSelector((state) => state.auth.user.id);
+  // --- Determine transaction type icon & color
+  const getTypeIcon = () => {
+    switch (transaction.type) {
+      case "add":
+        return <PlusCircle className="w-5 h-5 text-green-400" />;
+      case "request":
+        return <Clock className="w-5 h-5 text-yellow-400" />;
+      case "transfer":
+        return transaction.id === currentUserId ? (
+          <ArrowUpRight className="w-5 h-5 text-red-400" /> // Sent
+        ) : (
+          <ArrowDownLeft className="w-5 h-5 text-green-400" /> // Received
+        );
+      default:
+        return <Clock className="w-5 h-5 text-slate-400" />;
+    }
+  };
+
+  // --- Determine status icon
   const getStatusIcon = () => {
     switch (transaction.status) {
       case "success":
@@ -23,32 +45,35 @@ export function TransactionRow({ transaction }: TransactionRowProps) {
       case "failed":
       case "rejected":
         return <XCircle className="w-4 h-4 text-red-400" />;
+      case "cancelled":
+        return <XCircle className="w-4 h-4 text-slate-500" />;
       default:
         return <Clock className="w-4 h-4 text-slate-400" />;
     }
   };
 
-  const getTypeIcon = () => {
-    if (transaction.type === "sent")
-      return <ArrowUpRight className="w-5 h-5 text-red-400" />;
-    if (transaction.type === "received")
-      return <ArrowDownLeft className="w-5 h-5 text-green-400" />;
-    return <Clock className="w-5 h-5 text-yellow-400" />;
-  };
-
+  // --- Amount styling
   const getAmountColor = () => {
-    if (transaction.type === "sent") return "text-red-400";
-    if (transaction.type === "received") return "text-green-400";
-    return "text-yellow-400";
+    if (transaction.type === "add") return "text-green-400";
+    if (transaction.type === "transfer") {
+      return transaction.from === currentUserId
+        ? "text-red-400"
+        : "text-green-400";
+    }
+    if (transaction.type === "request") return "text-yellow-400";
+    return "text-slate-400";
   };
 
   const getAmountPrefix = () => {
-    if (transaction.type === "sent") return "-";
-    if (transaction.type === "received") return "+";
+    if (transaction.type === "add") return "+";
+    if (transaction.type === "transfer") {
+      return transaction.from === currentUserId ? "-" : "+";
+    }
+    if (transaction.type === "request") return "";
     return "";
   };
 
-  // Determine fallback description
+  // --- Description
   const getDescription = () => {
     if (transaction.description && transaction.description.trim() !== "") {
       return transaction.description;
@@ -58,7 +83,9 @@ export function TransactionRow({ transaction }: TransactionRowProps) {
       case "add":
         return "Added Money";
       case "transfer":
-        return transaction.type === "sent" ? "Paid Money" : "Received Money";
+        return transaction.from === currentUserId
+          ? "Sent Money"
+          : "Received Money";
       case "request":
         return "Money Request";
       default:
@@ -66,7 +93,7 @@ export function TransactionRow({ transaction }: TransactionRowProps) {
     }
   };
 
-  const formattedDate = new Date(transaction.date).toLocaleString();
+  const formattedDate = new Date(transaction.createdAt).toLocaleString();
 
   return (
     <div
@@ -84,8 +111,8 @@ export function TransactionRow({ transaction }: TransactionRowProps) {
           </div>
           <div className="flex items-center space-x-2 text-sm text-slate-400">
             <span>{formattedDate}</span>
-            {transaction.sender && <span>• from {transaction.sender}</span>}
-            {transaction.recipient && <span>• to {transaction.recipient}</span>}
+            {transaction.from && <span>• from {transaction.from}</span>}
+            {transaction.to && <span>• to {transaction.to}</span>}
           </div>
         </div>
       </div>
