@@ -18,7 +18,6 @@ export function TransactionDetailsPage() {
     const fetchTransaction = async () => {
       try {
         const res = await api.get(`/transactions/${id}`);
-        console.log(res.data)
         setTransaction(res.data);
       } catch (err) {
         console.error("Error fetching transaction", err);
@@ -112,7 +111,7 @@ export function TransactionDetailsPage() {
             <div className="flex justify-between">
               <span className="text-slate-400 text-sm">Recipient</span>
               <span className="text-white font-medium">
-                {transaction.recipient}
+                {transaction.toEmail}
               </span>
             </div>
 

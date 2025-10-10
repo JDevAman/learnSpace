@@ -1,9 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { RootState } from "../../store/store";
-import { Card, CardContent } from "../../components/Card/Card";
-import { Button } from "../../components/Button/Button";
-import { ArrowUpRight, ArrowDownLeft, Check, X } from "lucide-react";
 import {
   fetchRequestsAPI,
   acceptRequestAPI,
@@ -13,6 +10,7 @@ import {
   updateMoneyFlow,
   setMoneyFlows,
 } from "../../store/slices/moneyFlowSlice";
+import { TransactionRow } from "../../components/ui/transactionRow";
 
 export function RequestsPage() {
   const dispatch = useAppDispatch();
@@ -29,7 +27,6 @@ export function RequestsPage() {
       setLoading(true);
       try {
         const data = await fetchRequestsAPI();
-        // store only request-type flows in moneyFlowSlice
         dispatch(
           setMoneyFlows(data.map((req) => ({ ...req, type: "request" })))
         );
@@ -41,12 +38,12 @@ export function RequestsPage() {
     })();
   }, [dispatch]);
 
-  // --- Filtered requests
+  // --- Filter requests
   const filteredRequests = useMemo(() => {
     const requests = moneyFlows.filter((t) => t.type === "request");
     if (filter === "all") return requests;
     return requests.filter((r) =>
-      filter === "incoming" ? r.to === userId : r.from === userId
+      filter === "incoming" ? r.toId === userId : r.fromId === userId
     );
   }, [moneyFlows, filter, userId]);
 
@@ -76,7 +73,7 @@ export function RequestsPage() {
 
   const handleCancel = async (id: string) => {
     try {
-      await rejectRequestAPI(id); // same endpoint for simplicity
+      await rejectRequestAPI(id); // reuse reject endpoint
       dispatch(updateMoneyFlow({ id, status: "cancelled" }));
     } catch (err) {
       console.error("Cancel failed:", err);
@@ -90,14 +87,14 @@ export function RequestsPage() {
         <div>
           <h1 className="text-2xl font-semibold text-white">Requests</h1>
           <p className="text-slate-400">
-            {pendingCount} pending · ₹{(totalRequested ).toFixed(2)} total
+            {pendingCount} pending · ₹{totalRequested.toFixed(2)} total
             requested
           </p>
         </div>
         <div className="text-slate-400">
           <span className="text-sm">Balance:</span>{" "}
           <span className="text-cyan-400 font-medium">
-            ₹{(balance ).toFixed(2)}
+            ₹{balance.toFixed(2)}
           </span>
         </div>
       </div>
@@ -122,102 +119,23 @@ export function RequestsPage() {
       {/* Request List */}
       <div className="space-y-4">
         {loading ? (
-          <Card className="bg-slate-900/30 border-slate-800">
-            <CardContent className="p-12 text-center text-slate-400">
-              Loading requests...
-            </CardContent>
-          </Card>
+          <div className="p-12 text-center text-slate-400">
+            Loading requests...
+          </div>
         ) : filteredRequests.length === 0 ? (
-          <Card className="bg-slate-900/30 border-slate-800">
-            <CardContent className="p-12 text-center text-slate-400">
-              No {filter} requests found
-            </CardContent>
-          </Card>
+          <div className="p-12 text-center text-slate-400">
+            No {filter} requests found
+          </div>
         ) : (
-          filteredRequests.map((req) => {
-            const isIncoming = req.to === userId;
-            const displayEmail = isIncoming ? req.from : req.to;
-
-            return (
-              <Card
-                key={req.id}
-                className="border-slate-800 bg-slate-900/40 flex justify-between items-center px-5 py-4"
-              >
-                <div className="flex items-center space-x-4">
-                  <div
-                    className={`w-10 h-10 flex items-center justify-center rounded-full ${
-                      isIncoming
-                        ? "bg-green-500/20 text-green-400"
-                        : "bg-red-500/20 text-red-400"
-                    }`}
-                  >
-                    {isIncoming ? (
-                      <ArrowDownLeft className="w-5 h-5" />
-                    ) : (
-                      <ArrowUpRight className="w-5 h-5" />
-                    )}
-                  </div>
-                  <div>
-                    <p className="text-white font-medium">{displayEmail}</p>
-                    <p className="text-slate-400 text-sm">
-                      {new Date(req.createdAt).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="text-right">
-                  <p className="text-lg text-white font-semibold">
-                    ₹{(req.amount ).toFixed(2)}
-                  </p>
-                  <p
-                    className={`text-xs ${
-                      req.status === "success"
-                        ? "text-green-400"
-                        : req.status === "pending"
-                        ? "text-yellow-400"
-                        : "text-red-400"
-                    }`}
-                  >
-                    {req.status}
-                  </p>
-                </div>
-
-                {req.status === "pending" && (
-                  <div className="flex gap-2 ml-4">
-                    {isIncoming ? (
-                      <>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-green-400 border-green-400"
-                          onClick={() => handleAccept(req.id)}
-                        >
-                          <Check className="w-4 h-4 mr-1" /> Accept
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-red-400 border-red-400"
-                          onClick={() => handleReject(req.id)}
-                        >
-                          <X className="w-4 h-4 mr-1" /> Reject
-                        </Button>
-                      </>
-                    ) : (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-red-400 border-red-400"
-                        onClick={() => handleCancel(req.id)}
-                      >
-                        <X className="w-4 h-4 mr-1" /> Cancel
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </Card>
-            );
-          })
+          filteredRequests.map((req) => (
+            <TransactionRow
+              key={req.id}
+              transaction={req}
+              onAccept={handleAccept}
+              onReject={handleReject}
+              onCancel={handleCancel}
+            />
+          ))
         )}
       </div>
     </div>

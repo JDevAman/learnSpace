@@ -24,7 +24,6 @@ export const listTransactions = async (req, res) => {
       .limit(Number(limit));
 
     const result = transactions.map((t) => formatTransaction(t, userId));
-
     res.json({
       transactions: result,
       total,

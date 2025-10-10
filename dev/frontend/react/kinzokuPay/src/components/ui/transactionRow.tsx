@@ -9,50 +9,31 @@ import {
 import { useAppNavigation } from "../../utils/useAppNavigation";
 import { MoneyFlow } from "../../utils/types";
 import { useAppSelector } from "../../store/hooks";
+import { Button } from "../Button/Button";
 
 interface TransactionRowProps {
-  transaction: MoneyFlow; // Needed to detect sent/received for transfers
+  transaction: MoneyFlow;
+  onAccept?: (id: string) => void;
+  onReject?: (id: string) => void;
+  onCancel?: (id: string) => void;
 }
 
-export function TransactionRow({ transaction }: TransactionRowProps) {
+export function TransactionRow({
+  transaction,
+  onAccept,
+  onReject,
+  onCancel,
+}: TransactionRowProps) {
   const { goToTransactionDetails } = useAppNavigation();
+  console.log(transaction)
   const currentUserId = useAppSelector((state) => state.auth.user.id);
-  // --- Determine transaction type icon & color
-  const getTypeIcon = () => {
-    switch (transaction.type) {
-      case "add":
-        return <PlusCircle className="w-5 h-5 text-green-400" />;
-      case "request":
-        return <Clock className="w-5 h-5 text-yellow-400" />;
-      case "transfer":
-        return transaction.id === currentUserId ? (
-          <ArrowUpRight className="w-5 h-5 text-red-400" /> // Sent
-        ) : (
-          <ArrowDownLeft className="w-5 h-5 text-green-400" /> // Received
-        );
-      default:
-        return <Clock className="w-5 h-5 text-slate-400" />;
-    }
-  };
 
-  // --- Determine status icon
-  const getStatusIcon = () => {
-    switch (transaction.status) {
-      case "success":
-        return <CheckCircle className="w-4 h-4 text-green-400" />;
-      case "pending":
-        return <Clock className="w-4 h-4 text-yellow-400" />;
-      case "failed":
-      case "rejected":
-        return <XCircle className="w-4 h-4 text-red-400" />;
-      case "cancelled":
-        return <XCircle className="w-4 h-4 text-slate-500" />;
-      default:
-        return <Clock className="w-4 h-4 text-slate-400" />;
-    }
-  };
+  const isIncomingRequest =
+    transaction.type === "request" && transaction.toId === currentUserId;
+  const isOutgoingRequest =
+    transaction.type === "request" && transaction.fromId === currentUserId;
 
-  // --- Amount styling
+  // --- Amount & Status logic remains the same
   const getAmountColor = () => {
     if (transaction.type === "add") return "text-green-400";
     if (transaction.type === "transfer") {
@@ -60,69 +41,115 @@ export function TransactionRow({ transaction }: TransactionRowProps) {
         ? "text-red-400"
         : "text-green-400";
     }
-    if (transaction.type === "request") return "text-yellow-400";
+    if (transaction.type === "request") {
+      if (transaction.status === "pending") return "text-yellow-400";
+      if (transaction.status === "success") return "text-green-400";
+      return "text-red-400";
+    }
     return "text-slate-400";
   };
 
   const getAmountPrefix = () => {
     if (transaction.type === "add") return "+";
-    if (transaction.type === "transfer") {
-      return transaction.from === currentUserId ? "-" : "+";
-    }
-    if (transaction.type === "request") return "";
+    if (transaction.type === "transfer")
+      return transaction.fromId === currentUserId ? "-" : "+";
     return "";
   };
 
-  // --- Description
   const getDescription = () => {
-    if (transaction.description && transaction.description.trim() !== "") {
-      return transaction.description;
-    }
-
-    switch (transaction.type) {
-      case "add":
-        return "Added Money";
-      case "transfer":
-        return transaction.from === currentUserId
-          ? "Sent Money"
-          : "Received Money";
-      case "request":
-        return "Money Request";
-      default:
-        return "Transaction";
-    }
+    if (transaction.description?.trim()) return transaction.description;
+    if (transaction.type === "add") return "Added Money";
+    if (transaction.type === "transfer")
+      return transaction.fromId === currentUserId
+        ? "Sent Money"
+        : "Received Money";
+    if (transaction.type === "request") return "Money Request";
+    return "Transaction";
   };
 
   const formattedDate = new Date(transaction.createdAt).toLocaleString();
 
   return (
     <div
-      onClick={() => goToTransactionDetails(transaction.id)}
       className="flex items-center justify-between p-4 hover:bg-slate-800/30 transition-colors border-b border-slate-800 last:border-b-0 cursor-pointer"
+      onClick={() => goToTransactionDetails(transaction.id)}
     >
       <div className="flex items-center space-x-4">
         <div className="w-12 h-12 bg-slate-800/50 rounded-full flex items-center justify-center">
-          {getTypeIcon()}
+          {transaction.type === "add" && (
+            <PlusCircle className="w-5 h-5 text-green-400" />
+          )}
+          {transaction.type === "transfer" &&
+            (transaction.fromId === currentUserId ? (
+              <ArrowUpRight className="w-5 h-5 text-red-400" />
+            ) : (
+              <ArrowDownLeft className="w-5 h-5 text-green-400" />
+            ))}
+          {transaction.type === "request" && (
+            <Clock className="w-5 h-5 text-yellow-400" />
+          )}
         </div>
         <div>
           <div className="flex items-center space-x-2">
             <p className="text-white font-medium">{getDescription()}</p>
-            {getStatusIcon()}
           </div>
           <div className="flex items-center space-x-2 text-sm text-slate-400">
             <span>{formattedDate}</span>
-            {transaction.from && <span>• from {transaction.from}</span>}
-            {transaction.to && <span>• to {transaction.to}</span>}
+            {transaction.fromEmail && (
+              <span>• from {transaction.fromEmail}</span>
+            )}
+            {transaction.toEmail && <span>• to {transaction.toEmail}</span>}
           </div>
         </div>
       </div>
-      <div className="text-right">
+
+      <div className="text-right flex flex-col items-end">
         <p className={`font-semibold ${getAmountColor()}`}>
           {getAmountPrefix()}₹{transaction.amount.toFixed(2)}
         </p>
         <p className="text-xs text-slate-500 capitalize">
           {transaction.status}
         </p>
+
+        {/* --- Request Actions --- */}
+        {transaction.type === "request" && transaction.status === "pending" && (
+          <div className="flex gap-2 mt-1">
+            {isIncomingRequest && (
+              <>
+                {onAccept && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-green-400 border-green-400"
+                    onClick={() => onAccept(transaction.id)}
+                  >
+                    Accept
+                  </Button>
+                )}
+                {onReject && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-red-400 border-red-400"
+                    onClick={() => onReject(transaction.id)}
+                  >
+                    Reject
+                  </Button>
+                )}
+              </>
+            )}
+            {isOutgoingRequest && onCancel && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-red-400 border-red-400"
+                onClick={() => onCancel(transaction.id)}
+              >
+                Cancel
+              </Button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
-import { UserModel } from "../db";
+import mongoose from "mongoose";
+import { UserModel } from "../models/user.model";
 
 export async function getUserIdByEmail(email: string) {
   const user = await UserModel.findOne({
@@ -8,7 +9,6 @@ export async function getUserIdByEmail(email: string) {
   return user._id;
 }
 
-import mongoose from "mongoose";
 
 export const getUserEmailById = async (
   id: string | mongoose.Types.ObjectId

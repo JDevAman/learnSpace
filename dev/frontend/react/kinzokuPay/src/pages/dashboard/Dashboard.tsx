@@ -40,7 +40,6 @@ export function DashboardPage() {
     async function fetchData() {
       try {
         const data = await fetchDashboardStatsAPI();
-        console.log(data);
         // Update Redux balance
         dispatch(setBalance(data.balance ?? 0));
 

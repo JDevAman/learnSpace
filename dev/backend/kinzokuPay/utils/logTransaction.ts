@@ -1,35 +1,33 @@
-import { TransactionModel } from "../db";
 import mongoose from "mongoose";
-
-interface LogTransactionParams {
-  from: mongoose.Types.ObjectId | null;
-  to: mongoose.Types.ObjectId;
-  amount: number;
-  type: "transfer" | "request" | "add";
-  description?: string | null;
-  status?: "pending" | "success" | "rejected" | "failed";
-  session?: mongoose.ClientSession | null;
-  expiresAt?: Date | null;
-}
+import { TransactionModel } from "../models/transaction.model";
 
 export default async function logTransaction({
   from,
   to,
   amount,
   type,
-  description = null,
-  status = "pending",
-  session = null,
-  expiresAt = null,
-}: LogTransactionParams) {
+  status,
+  description,
+  session,
+  expiresAt,
+}: {
+  from?: string | null;
+  to?: string | null;
+  amount: number;
+  type: string;
+  status: string;
+  description?: string;
+  session?: any;
+  expiresAt?: Date | null;
+}) {
   const transaction = new TransactionModel({
-    from,
-    to,
+    from: from ? new mongoose.Types.ObjectId(from) : null,
+    to: to ? new mongoose.Types.ObjectId(to) : null,
     amount,
     type,
-    description,
     status,
-    expiresAt,
+    description,
+    expiresAt: expiresAt || null,
   });
 
   await transaction.save({ session });

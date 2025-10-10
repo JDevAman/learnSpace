@@ -23,15 +23,19 @@ export interface SupportOption {
 
 export interface MoneyFlow {
   id: string;
-  type: "transfer" | "request" | "add"; // transfer = send/receive, request, add = add money
+  type: "transfer" | "request" | "add" | "refund";
   amount: number; // in paise
   status: "pending" | "success" | "failed" | "rejected" | "cancelled";
-  from?: string; // userId or email (sender)
-  to?: string; // userId or email (recipient)
+  fromId?: string; // MongoDB _id of sender
+  toId?: string; // MongoDB _id of recipient
+  fromEmail?: string;
+  toEmail?: string;
   description?: string;
-  expiresAt?: string; // only for requests
-  createdAt: string;
-  finalizedAt?: string | null;
+  relatedTransactionId?: string | null; // for refunds or linked transactions
+  initiatedById?: string | null; // who initiated (admin/refund)
+  expiresAt?: string | null; // ISO string
+  createdAt: string; // ISO string
+  finalizedAt?: string | null; // ISO string
 }
 
 export interface AuthenticatedLayoutProps {

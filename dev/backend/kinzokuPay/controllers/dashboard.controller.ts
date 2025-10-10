@@ -1,10 +1,18 @@
-import { TransactionModel } from "../db";
+import { TransactionModel } from "../models/transaction.model";
+import { AccountModel } from "../models/account.model";
 import { formatTransaction } from "../utils/formatTransaction";
 
 export const getDashboardStats = async (req, res, next) => {
   try {
     const userId = req.user.id;
 
+    // --- Fetch current balance directly from Account
+    const account = await AccountModel.findOne({ userId }).lean();
+    if (!account) return res.status(404).json({ error: "Account not found" });
+
+    const balance = account.balance / 100; // paise → ₹
+
+    // --- Fetch all transactions for this user
     const transactions = await TransactionModel.find({
       $or: [{ from: userId }, { to: userId }],
     })
@@ -13,46 +21,43 @@ export const getDashboardStats = async (req, res, next) => {
       .sort({ createdAt: -1 })
       .lean();
 
-    const amount = (t: any) => (t.amount ? t.amount / 100 : 0);
+    // --- Filter only successful transactions for stats
+    const successTxns = transactions.filter((t) => t.status === "success");
 
-    let balance = 0;
-    let previousBalance = 0;
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
 
-    transactions.forEach((t: any) => {
-      const val =
-        t.type === "transfer"
-          ? t.to?._id.toString() === userId
-            ? amount(t)
-            : -amount(t)
-          : amount(t);
+    // --- Calculate stats from successful transactions
+    const thisMonth = successTxns
+      .filter((t) => new Date(t.createdAt) >= startOfMonth)
+      .reduce((sum, t) => sum + t.amount / 100, 0);
 
-      balance += val;
+    const sent = successTxns
+      .filter((t) => (t.from?._id?.toString() || t.from?.toString()) === userId)
+      .reduce((sum, t) => sum + t.amount / 100, 0);
 
-      if (t.createdAt < startOfMonth) {
-        previousBalance += val;
-      }
-    });
+    const received = successTxns
+      .filter(
+        (t) =>
+          (t.to?._id?.toString() || t.to?.toString()) === userId ||
+          t.type === "add"
+      )
+      .reduce((sum, t) => sum + t.amount / 100, 0);
 
-    const recentTransactions = await Promise.all(
-      transactions.slice(0, 5).map((t) => formatTransaction(t, userId))
-    );
+    // --- Format the first 5 transactions for display
+    const recentTransactions = transactions
+      .slice(0, 5)
+      .map((t) => formatTransaction(t, userId));
 
     res.json({
       balance,
-      previousBalance,
-      thisMonth: transactions
-        .filter((t) => t.createdAt >= startOfMonth)
-        .reduce((sum, t) => sum + amount(t), 0),
+      previousBalance: 0, // keep as-is
+      thisMonth,
       thisMonthChange: 0,
-      sent: transactions
-        .filter((t) => t.from?._id.toString() === userId)
-        .reduce((sum, t) => sum + amount(t), 0),
+      sent,
       sentChange: 0,
-      received: transactions
-        .filter((t) => t.to?._id.toString() === userId || t.type === "add")
-        .reduce((sum, t) => sum + amount(t), 0),
+      received,
       receivedChange: 0,
       transactions: transactions.length,
       transactionsChange: 0,

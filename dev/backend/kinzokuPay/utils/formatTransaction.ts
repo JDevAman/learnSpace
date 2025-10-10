@@ -1,15 +1,13 @@
-import { getUserEmailById } from "./helperFunction";
+export const formatTransaction = (t: any, userId: string) => {
+  // Always read IDs as strings
+  const fromId = t.from?._id?.toString?.() || null;
+  const toId = t.to?._id?.toString?.() || null;
 
-export const formatTransaction = async (t: any, userId: string) => {
-  const fromId = t.from?._id?.toString() || t.from?.toString();
-  const toId = t.to?._id?.toString() || t.to?.toString();
+  // Always read emails/usernames from stored fields
+  const fromEmail = t.fromEmail || (fromId === null ? "system" : "");
+  const toEmail = t.toEmail || (toId === null ? "system" : "");
 
-  // Use your helper function to get emails
-  const fromEmail = fromId
-    ? await getUserEmailById(fromId)
-    : "unknown@user.com";
-  const toEmail = toId ? await getUserEmailById(toId) : "unknown@user.com";
-
+  // Compute direction
   const direction =
     t.type === "request"
       ? toId === userId
@@ -17,23 +15,25 @@ export const formatTransaction = async (t: any, userId: string) => {
         : "outgoing"
       : t.type === "transfer"
       ? fromId === userId
-        ? "sent"
-        : "received"
-      : "received"; // add money treated as received
+        ? "outgoing"
+        : "incoming"
+      : "incoming";
 
   return {
     id: t._id.toString(),
     type: t.type,
     amount: t.amount / 100,
-    description: t.description || "",
-    from: fromId,
+    status: t.status,
     to: toId,
+    from: fromId,
     fromEmail,
     toEmail,
-    status: t.status,
+    description: t.description || "",
+    direction,
     createdAt: t.createdAt,
     finalizedAt: t.finalizedAt || null,
     expiresAt: t.expiresAt || null,
-    direction,
+    relatedTransactionId: t.relatedTransaction?.toString() || null,
+    initiatedById: t.initiatedBy?.toString() || null,
   };
 };

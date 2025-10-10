@@ -1,13 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { use, useCallback, useEffect, useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { Button } from "../../components/Button/Button";
 import { InputField } from "../../components/Form/InputField";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../../components/Card/Card";
+import { Card, CardContent } from "../../components/Card/Card";
 import { TransactionRow } from "../../components/ui/transactionRow";
 import { Search, Filter, Download } from "lucide-react";
 import { useAppNavigation } from "../../utils/useAppNavigation";
@@ -22,17 +17,17 @@ import {
 } from "../../store/slices/moneyFlowSlice";
 import { useDebounce } from "../../utils/useDebounce";
 import saveAs from "file-saver";
+import { StatsCard } from "../../components/Card/StatsCard";
 
 const LIMIT = 20;
 
 export function TransactionsPage() {
   const dispatch = useAppDispatch();
   const { goToPayment } = useAppNavigation();
-  const {
-    list: moneyFlows,
-    loading,
-    balance,
-  } = useAppSelector((state) => state.moneyFlow);
+  const { list: moneyFlows, loading } = useAppSelector(
+    (state) => state.moneyFlow
+  );
+  const userId = useAppSelector((state) => state.auth.user.id);
 
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
@@ -66,7 +61,26 @@ export function TransactionsPage() {
           params
         );
 
-        dispatch(setMoneyFlows(fetched));
+        // --- Map backend response to MoneyFlow interface
+        const formatted = fetched.map((t: any) => ({
+          id: t._id || t.id,
+          type: t.type, // transfer | request | add | refund
+          amount: t.amount, // in paise
+          status: t.status,
+          fromId: t.from?._id || t.from,
+          toId: t.to?._id || t.to,
+          fromEmail: t.from?.email || t.fromEmail,
+          toEmail: t.to?.email || t.toEmail,
+          description: t.description || "",
+          relatedTransactionId:
+            t.relatedTransaction?._id || t.relatedTransactionId || null,
+          initiatedById: t.initiatedBy?._id || t.initiatedById || null,
+          expiresAt: t.expiresAt || null,
+          createdAt: t.createdAt,
+          finalizedAt: t.finalizedAt || null,
+        }));
+
+        dispatch(setMoneyFlows(formatted));
         setTotal(total);
         setPage(pageNumber);
       } catch (err: any) {
@@ -83,19 +97,24 @@ export function TransactionsPage() {
   }, [activeFilter, debouncedSearchTerm, fromDate, toDate]);
 
   // --- Stats
+  const successMoneyFlows = useMemo(
+    () => moneyFlows.filter((t) => t.status === "success"),
+    [moneyFlows]
+  );
+
   const totalSent = useMemo(
     () =>
-      moneyFlows
-        .filter((t) => t.type === "sent")
+      successMoneyFlows
+        .filter((t) => t.fromId === userId)
         .reduce((s, t) => s + t.amount, 0),
-    [moneyFlows]
+    [successMoneyFlows]
   );
   const totalReceived = useMemo(
     () =>
-      moneyFlows
-        .filter((t) => t.type === "received")
+      successMoneyFlows
+        .filter((t) => t.toId === userId)
         .reduce((s, t) => s + t.amount, 0),
-    [moneyFlows]
+    [successMoneyFlows]
   );
   const pendingAmount = useMemo(
     () =>
@@ -204,64 +223,27 @@ export function TransactionsPage() {
         )}
 
         {/* Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-          <Card className="bg-slate-900/30 border-slate-800">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-slate-400 text-sm font-normal">
-                Total Sent
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="text-2xl font-semibold text-red-400 mb-1">
-                ₹{totalSent.toFixed(2)}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-slate-900/30 border-slate-800">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-slate-400 text-sm font-normal">
-                Total Received
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="text-2xl font-semibold text-green-400 mb-1">
-                ₹{totalReceived.toFixed(2)}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-slate-900/30 border-slate-800">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-slate-400 text-sm font-normal">
-                Pending
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="text-2xl font-semibold text-yellow-400 mb-1">
-                ₹{pendingAmount.toFixed(2)}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-slate-900/30 border-slate-800">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-slate-400 text-sm font-normal">
-                Net Flow
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div
-                className={`text-2xl font-semibold mb-1 ${
-                  totalReceived - totalSent >= 0
-                    ? "text-green-400"
-                    : "text-red-400"
-                }`}
-              >
-                ₹{Math.abs(totalReceived - totalSent).toFixed(2)}
-              </div>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatsCard
+            title="Total Sent"
+            value={totalSent}
+            color="text-red-400"
+          />
+          <StatsCard
+            title="Total Received"
+            value={totalReceived}
+            color="text-green-400"
+          />
+          <StatsCard
+            title="Pending"
+            value={pendingAmount}
+            color="text-yellow-400"
+          />
+          <StatsCard
+            title="Net Flow"
+            value={Math.abs(totalReceived - totalSent)}
+            color="text-green-400"
+          />
         </div>
 
         {/* Transaction List */}
