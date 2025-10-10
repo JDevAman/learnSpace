@@ -1,27 +1,22 @@
-import express from "express";
 import mongoose from "mongoose";
+import throwError from "../utils/helperFunction";
+import { TransactionModel } from "../models/transaction.model";
+import { AccountModel } from "../models/account.model";
+import logTransaction from "../utils/logTransaction";
+import { getUserIdByEmail } from "../utils/helperFunction";
+import { formatTransaction } from "../utils/formatTransaction";
 import {
   transferSchema,
   addMoneySchema,
   requestMoneySchema,
-  paiseToRupees,
 } from "../validators/accountValidator";
-import throwError from "../utils/error";
-import authenticate from "../middlewares/authMiddleware";
-import { AccountModel, TransactionModel } from "../db";
-import logTransaction from "../utils/logTransaction";
-import { getUserIdByEmail } from "../utils/helperFunction";
-import { formatTransaction } from "../utils/formatTransaction";
 
-const accountRouter = express.Router();
 const EXPIRY_DAYS = Number(process.env.EXPIRY_DAYS) || 5;
 const MS_IN_DAY = 24 * 60 * 60 * 1000;
 const now = () => new Date();
 
-accountRouter.use(authenticate);
-
 // -------------------- TRANSFER --------------------
-accountRouter.post("/transfer", async (req, res, next) => {
+export const transferMoney = async (req, res, next) => {
   const session = await mongoose.startSession();
   try {
     const parsed = transferSchema.safeParse(req.body);
@@ -41,7 +36,6 @@ accountRouter.post("/transfer", async (req, res, next) => {
     const receiver = await AccountModel.findOne({ userId: to }).session(
       session
     );
-
     if (!sender || !receiver) throwError("Account not found", 404);
     if (sender.balance < amount) throwError("Insufficient balance", 400);
 
@@ -72,30 +66,28 @@ accountRouter.post("/transfer", async (req, res, next) => {
   } finally {
     session.endSession();
   }
-});
+};
 
-// -------------------- REQUESTS --------------------
-accountRouter.get("/requests", async (req, res, next) => {
+// -------------------- REQUEST MONEY --------------------
+export const getRequests = async (req, res, next) => {
   try {
     const userId = req.user.id;
-
     const requests = await TransactionModel.find({
       type: "request",
       $or: [{ to: userId }, { from: userId }],
     })
-      .populate("from", "firstName lastName email")
-      .populate("to", "firstName lastName email")
+      .populate("from", "firstName lastName userName")
+      .populate("to", "firstName lastName userName")
       .sort({ createdAt: -1 })
       .lean();
 
-    const formattedRequests = requests.map((t) => formatTransaction(t, userId));
-    res.status(200).json(formattedRequests);
+    res.status(200).json(requests.map((t) => formatTransaction(t, userId)));
   } catch (err) {
     next(err);
   }
-});
+};
 
-accountRouter.post("/request", async (req, res, next) => {
+export const createRequest = async (req, res, next) => {
   try {
     const parsed = requestMoneySchema.safeParse(req.body);
     if (!parsed.success) throwError("Invalid input data!", 422);
@@ -108,7 +100,6 @@ accountRouter.post("/request", async (req, res, next) => {
       throwError("Cannot request money from yourself", 400);
 
     const expiresAt = new Date(Date.now() + EXPIRY_DAYS * MS_IN_DAY);
-
     const transaction = await logTransaction({
       from,
       to,
@@ -123,10 +114,9 @@ accountRouter.post("/request", async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-});
+};
 
-// -------------------- ACCEPT REQUEST --------------------
-accountRouter.post("/request/accept/:id", async (req, res, next) => {
+export const acceptRequest = async (req, res, next) => {
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
@@ -147,7 +137,6 @@ accountRouter.post("/request/accept/:id", async (req, res, next) => {
     const toAccount = await AccountModel.findOne({
       userId: transaction.to,
     }).session(session);
-
     if (!fromAccount || !toAccount) throwError("Account not found", 404);
     if (toAccount.balance < transaction.amount)
       throwError("Insufficient balance", 400);
@@ -175,10 +164,9 @@ accountRouter.post("/request/accept/:id", async (req, res, next) => {
   } finally {
     session.endSession();
   }
-});
+};
 
-// -------------------- REJECT REQUEST --------------------
-accountRouter.post("/request/reject/:id", async (req, res, next) => {
+export const rejectRequest = async (req, res, next) => {
   try {
     const transaction = await TransactionModel.findById(req.params.id);
     if (!transaction || transaction.status !== "pending")
@@ -196,21 +184,17 @@ accountRouter.post("/request/reject/:id", async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-});
+};
 
-// -------------------- CANCEL REQUEST --------------------
-accountRouter.post("/request/cancel/:id", async (req, res, next) => {
+export const cancelRequest = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const tx = await TransactionModel.findById(req.params.id);
-
-    if (!tx) return res.status(404).json({ message: "Request not found" });
-    if (tx.type !== "request")
-      return res.status(400).json({ message: "Not a request transaction" });
+    if (!tx) return throwError("Request not found", 404);
+    if (tx.type !== "request") throwError("Not a request transaction", 400);
     if (tx.from.toString() !== userId)
-      return res.status(403).json({ message: "Not authorized to cancel" });
-    if (tx.status !== "pending")
-      return res.status(400).json({ message: "Request already processed" });
+      throwError("Not authorized to cancel", 403);
+    if (tx.status !== "pending") throwError("Request already processed", 400);
 
     tx.status = "rejected";
     tx.finalizedAt = now();
@@ -220,10 +204,10 @@ accountRouter.post("/request/cancel/:id", async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-});
+};
 
 // -------------------- ADD MONEY --------------------
-accountRouter.put("/add-money", async (req, res, next) => {
+export const addMoney = async (req, res, next) => {
   const session = await mongoose.startSession();
   try {
     const parsed = addMoneySchema.safeParse(req.body);
@@ -256,17 +240,15 @@ accountRouter.put("/add-money", async (req, res, next) => {
   } finally {
     session.endSession();
   }
-});
+};
 
 // -------------------- GET BALANCE --------------------
-accountRouter.get("/balance", async (req, res, next) => {
+export const getBalance = async (req, res, next) => {
   try {
     const account = await AccountModel.findOne({ userId: req.user.id }).lean();
     if (!account) throwError("Account not found", 404);
-    res.status(200).json({ balance: paiseToRupees(account.balance) });
+    res.status(200).json({ balance: account.balance / 100 });
   } catch (err) {
     next(err);
   }
-});
-
-export default accountRouter;
+};

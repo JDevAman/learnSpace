@@ -1,23 +1,17 @@
-import express from "express";
 import { TransactionModel } from "../db";
-import authenticate from "../middlewares/authMiddleware";
 import { formatTransaction } from "../utils/formatTransaction";
 
-const dashboardRouter = express.Router();
-dashboardRouter.use(authenticate);
-
-// dashboard route
-dashboardRouter.get("/stats", async (req, res) => {
+export const getDashboardStats = async (req, res, next) => {
   try {
     const userId = req.user.id;
 
     const transactions = await TransactionModel.find({
       $or: [{ from: userId }, { to: userId }],
     })
-      .populate("from", "firstName lastName email")
-      .populate("to", "firstName lastName email")
+      .populate("from", "firstName lastName userName")
+      .populate("to", "firstName lastName userName")
       .sort({ createdAt: -1 })
-      .lean(); // convert Mongoose docs to plain JS objects
+      .lean();
 
     const amount = (t: any) => (t.amount ? t.amount / 100 : 0);
 
@@ -41,7 +35,6 @@ dashboardRouter.get("/stats", async (req, res) => {
       }
     });
 
-    // ✅ Await async formatTransaction
     const recentTransactions = await Promise.all(
       transactions.slice(0, 5).map((t) => formatTransaction(t, userId))
     );
@@ -66,10 +59,6 @@ dashboardRouter.get("/stats", async (req, res) => {
       recentTransactions,
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Internal Server Error" });
+    next(err);
   }
-});
-
-
-export default dashboardRouter;
+};

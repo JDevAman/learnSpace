@@ -1,5 +1,4 @@
 import { UserModel } from "../db";
-import throwError from "./error";
 
 export async function getUserIdByEmail(email: string) {
   const user = await UserModel.findOne({
@@ -10,7 +9,6 @@ export async function getUserIdByEmail(email: string) {
 }
 
 import mongoose from "mongoose";
-import { UserModel } from "../db";
 
 export const getUserEmailById = async (
   id: string | mongoose.Types.ObjectId
@@ -28,3 +26,11 @@ export const getUserEmailById = async (
   const user = await UserModel.findById(objectId).lean();
   return user?.email || null;
 };
+
+function throwError(message, status = 400) {
+  const err = new Error(message);
+  err.status = status;
+  throw err;
+}
+
+export default throwError;

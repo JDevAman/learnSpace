@@ -223,3 +223,16 @@ RBAC:
 * Route guarding: show/hide pages based on role
 * Conditional UI: buttons/actions based on role
 * Backend must enforce permissions for security
+
+
+Today's Agenda:
+
+- Fix Transaction Details
+- Fix Accept/Reject/Cancel Request
+
+After that:
+- Mail Notifications for SignIn/SignUp Mail, Reset password, Request Money.??
+- Role Based Access: USer, Admin, SuperAdmin. SuperAdmin can only create admin.
+- Transaction Schema -> Admin Can Initiate Refund for other transaction.
+   Will both Transaction exists??
+   What will be visible to user vs admin vs superadmin.

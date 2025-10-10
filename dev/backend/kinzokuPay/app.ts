@@ -1,30 +1,39 @@
 import express from "express";
 import cors from "cors";
-import config from "./config";
-
-import mainRouter from "./routes/index";
 import cookieParser from "cookie-parser";
+import config from "./config";
+import { connectDB } from "./db";
+import mainRouter from "./routes/main.routes";
+
 const app = express();
 
 // Middlewares
 app.use(express.json());
 app.use(
   cors({
-    origin: config.frontendURI, 
+    origin: config.frontendURI,
     credentials: true,
   })
 );
 app.use(cookieParser());
+
+// Routes
 app.use("/api/v1", mainRouter);
 
-app.use(function (err, req, res, next) {
+// Error handler
+app.use((err, req, res, next) => {
   console.error({ "Error Caught": err.stack || err });
   res
     .status(err.status || 500)
-    .send({ error: err.message || "Something went wrong!" });
+    .json({ error: err.message || "Something went wrong!" });
 });
 
-const port = 3000;
-app.listen(config.port, function () {
-  console.log(`Server is up and running on ${port}`);
-});
+// Start server after DB connection
+const startServer = async () => {
+  await connectDB();
+  app.listen(config.port, () => {
+    console.log(`🚀 Server running on port ${config.port}`);
+  });
+};
+
+startServer();
