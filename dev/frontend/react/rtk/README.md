@@ -1,54 +1,115 @@
-# React + TypeScript + Vite
+# 📌 Redux Toolkit
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 🚀 Why Redux Toolkit?
+- Official, recommended way to use Redux  
+- Reduces boilerplate  
+- Built-in best practices and tools  
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## ⚡ Core APIs
+### `configureStore`
+- Simplifies store creation  
+- Auto-setup for DevTools + Thunk middleware  
 
-## Expanding the ESLint configuration
+### `createSlice`
+- Combines **state + reducers + actions** in one place  
+- Uses **Immer** (mutating syntax → immutable updates)  
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### `createAsyncThunk`
+- Handles async logic (API calls)  
+- Generates `pending`, `fulfilled`, `rejected` action types  
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+### `createEntityAdapter`
+- Manages normalized collections  
+- CRUD helpers (`addOne`, `removeOne`, `updateOne`, etc.)  
+
+---
+
+## 📝 Example
+```ts
+import { configureStore, createSlice } from '@reduxjs/toolkit';
+
+const counterSlice = createSlice({
+  name: 'counter',
+  initialState: { value: 0 },
+  reducers: {
+    increment: (s) => { s.value += 1 },
+    decrement: (s) => { s.value -= 1 },
+    addBy: (s, a) => { s.value += a.payload },
+  }
+});
+
+export const { increment, decrement, addBy } = counterSlice.actions;
+
+export const store = configureStore({
+  reducer: { counter: counterSlice.reducer }
+});
+````
+
+---
+
+## 🎯 Usage in React
+
+```tsx
+import { useSelector, useDispatch } from 'react-redux';
+import { increment } from './store';
+
+function Counter() {
+  const value = useSelector((s: any) => s.counter.value);
+  const dispatch = useDispatch();
+  return <button onClick={() => dispatch(increment())}>{value}</button>;
+}
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## ⚡ RTK Query (Data Fetching)
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+* Built-in tool in Redux Toolkit for **API requests + caching**
+* Reduces boilerplate for fetching/loading/error states
+
+### Example
+
+```ts
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+
+export const api = createApi({
+  reducerPath: 'api',
+  baseQuery: fetchBaseQuery({ baseUrl: '/api' }),
+  endpoints: (builder) => ({
+    getUsers: builder.query({ query: () => 'users' }),
+  }),
+});
+
+export const { useGetUsersQuery } = api;
+```
+
+### Usage in Component
+
+```tsx
+function Users() {
+  const { data, error, isLoading } = useGetUsersQuery();
+  if (isLoading) return <p>Loading...</p>;
+  if (error) return <p>Error</p>;
+  return <ul>{data.map(u => <li key={u.id}>{u.name}</li>)}</ul>;
+}
+```
+
+---
+
+## ✅ When to Use
+
+* Global state (auth, theme, payments)
+* Async workflows (loading/error states)
+* Normalized data (users, transactions, messages)
+* API requests with caching & auto re-fetch
+
+---
+
+## 🔗 Resources
+
+* [Redux Toolkit Docs](https://redux-toolkit.js.org/)
+* [RTK Query Docs](https://redux-toolkit.js.org/rtk-query/overview)
+
 ```
