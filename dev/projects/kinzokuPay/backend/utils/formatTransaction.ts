@@ -1,7 +1,7 @@
 export const formatTransaction = (t: any, userId: string) => {
   // Always read IDs as strings
-  const fromId = t.from?._id?.toString?.() || null;
-  const toId = t.to?._id?.toString?.() || null;
+  const fromId = t.from?._id?.toString?.() || t.from?.toString() || null;
+  const toId = t.to?._id?.toString?.() || t.from?.toString() || null;
 
   // Always read emails/usernames from stored fields
   const fromEmail = t.fromEmail || (fromId === null ? "system" : "");

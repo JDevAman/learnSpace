@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "../../components/Card/Card";
+import { Card, CardHeader, CardTitle, CardContent } from "./Card";
 
 interface StatsCardProps {
   title: string;
