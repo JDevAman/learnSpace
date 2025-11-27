@@ -1,7 +1,7 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import bcrypt from "bcrypt";
-import { userRepository } from "@/repositories/user.repository";
+import { userRepository } from "../persistence/repositories/user.repository";
 
 passport.use(
   new LocalStrategy(

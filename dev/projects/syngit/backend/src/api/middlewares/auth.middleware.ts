@@ -1,18 +1,16 @@
-import { Request, Response, NextFunction } from "express";
-import { verifyAccessToken } from "@/utils/jwt";
-import { authService } from "@/services/auth.service";
+import { Request, Response, NextFunction, RequestHandler } from "express";
+import { verifyAccessToken } from "../../utils/jwt";
+import { authService } from "../../services/auth.service";
 
-export interface AuthenticatedRequest extends Request {
-  user?: { id: string; email: string | null };
-}
+export type AuthenticatedRequest = Request & {
+  currentUser?: { id: string; email: string | null };
+};
 
-export const requireAuth = async (
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
-) => {
+export const requireAuth: RequestHandler = async (req, res, next) => {
   try {
-    const token = req.cookies?.access_token;
+    const authReq = req as AuthenticatedRequest;
+
+    const token = authReq.cookies?.access_token;
     if (!token) {
       return res.status(401).json({ message: "Not authenticated" });
     }
@@ -24,7 +22,7 @@ export const requireAuth = async (
       return res.status(401).json({ message: "User not found" });
     }
 
-    req.user = { id: user.id, email: user.email };
+    authReq.currentUser = { id: user.id, email: user.email };
     next();
   } catch (err) {
     return res.status(401).json({ message: "Invalid or expired token" });

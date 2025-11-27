@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
-import { userRepository } from "@/repositories/user.repository";
-import { signAccessToken } from "@/utils/jwt";
+import { userRepository } from "../persistence/repositories/user.repository";
+import { signAccessToken } from "../utils/jwt";
 import type { User } from "@prisma/client";
 
 export class AuthService {
