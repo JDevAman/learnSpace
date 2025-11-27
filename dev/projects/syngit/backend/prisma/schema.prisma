@@ -17,6 +17,8 @@ model User {
   accounts      Account[]
   sessions      Session[]
   refreshTokens RefreshToken[]
+  playlists     Playlist[]
+  syncMappings  SyncMapping[]
 }
 
 enum Provider {
@@ -33,21 +35,32 @@ model Account {
   provider          Provider
   providerAccountId String
 
-  // Local
   passwordHash String?
-
-  // OAuth
-  accessToken   String?
-  refreshToken String?
-  tokenType     String?
-  scope         String?
-  expiresAt     DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  //??
+  oauthTokens ProviderToken[]
+
   @@unique([provider, providerAccountId])
+}
+
+model ProviderToken {
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id])
+
+  accessToken  String?
+  refreshToken String?
+  tokenType    String?
+  scope        String?
+  expiresAt    DateTime?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  revokedAt DateTime?
+
+  @@index([accountId])
 }
 
 model Session {
@@ -73,4 +86,72 @@ model RefreshToken {
   replacedById String?
 
   @@index([userId])
+}
+
+enum SyncStatus {
+  SUCCESS
+  FAILED
+  PARTIAL
+}
+
+model Playlist {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  provider           Provider
+  providerPlaylistId String // ID from Spotify / YouTube / etc.
+
+  name        String
+  description String?
+  isPrimary   Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // mappings where this playlist is source/target
+  syncMappingsAsSource SyncMapping[] @relation("SourcePlaylist")
+  syncMappingsAsTarget SyncMapping[] @relation("TargetPlaylist")
+
+  @@unique([provider, providerPlaylistId, userId])
+}
+
+model SyncMapping {
+  id String @id @default(cuid())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  sourcePlaylistId String
+  sourcePlaylist   Playlist @relation("SourcePlaylist", fields: [sourcePlaylistId], references: [id])
+
+  targetPlaylistId String
+  targetPlaylist   Playlist @relation("TargetPlaylist", fields: [targetPlaylistId], references: [id])
+
+  lastRunAt  DateTime?
+  lastStatus SyncStatus?
+  lastError  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  syncRunLogs SyncRunLog[]
+}
+
+model SyncRunLog {
+  id            String      @id @default(cuid())
+  syncMappingId String
+  syncMapping   SyncMapping @relation(fields: [syncMappingId], references: [id])
+
+  status SyncStatus
+
+  totalTracks   Int
+  matchedTracks Int
+  failedTracks  Int
+
+  startedAt    DateTime  @default(now())
+  finishedAt   DateTime?
+  errorMessage String?
+
+  @@index([syncMappingId])
 }

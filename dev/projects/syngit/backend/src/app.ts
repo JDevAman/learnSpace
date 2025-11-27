@@ -1,7 +1,9 @@
-import express from 'express';
-import cookieParser from 'cookie-parser';
-import authRoutes from './modules/auth/auth.routes';
-import passport from './config/passport';
+import express from "express";
+import cookieParser from "cookie-parser";
+import authRoutes from "./api/v1/auth.routes";
+import syncRoutes from "./api/v1/sync.routes";
+import playlistRoutes from "./api/v1/playlist.routes";
+import passport from "./config/passport";
 
 const app = express();
 
@@ -9,13 +11,8 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(passport.initialize());
 
-app.use('/auth', authRoutes);
+app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/sync", syncRoutes);
+app.use("/api/v1/playlists", playlistRoutes);
 
-app.get('/', (req, res) => {
-  res.send('Syngit API up');
-});
-
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-  console.log(`Syngit auth service listening on port ${port}`);
-});
+export { app };
