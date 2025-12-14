@@ -26,33 +26,31 @@ void helper(){
 }
 
 void solve() {
-int n, k; 
-    cin >> n >> k;
+    int n, k; cin>>n>>k;
+    int two = 0, three = 0, five = 0;
+    int res = INT_MAX, res2 = INT_MAX, res3 = INT_MAX;
+    for(int i=0; i<n; i++){ 
+        int x; cin>>x;
+        if(x%2 == 0) two++;
+        if(x%3 == 0) three++;
+        if(x%5 == 0) five++;
+        if(k == 4){
+            if(x%2 <= res2){
+                res3 = res2;
+                res2 = x%2;
+            } 
+            else{
+                res3 = min(x%2,res3);
+            }
+        }
+        res = min(res, k-x%k);
 
-    int count2 = 0, count3 = 0, count5 = 0;
-    int res = LLONG_MAX;
-
-    for (int i = 0; i < n; i++) {
-        int x; cin >> x;
-
-        if (x % 2 == 0) count2++;
-        if (x % 3 == 0) count3++;
-        if (x % 5 == 0) count5++;
-
-        res = min(res, (k - x % k) % k);  // safe min-increment
     }
-
-    // Directly divisible cases → answer is 0
-    if ((k == 2 && count2 > 0) ||
-        (k == 3 && count3 > 0) ||
-        (k == 4 && count2 > 1) ||  // two even numbers cover k=4
-        (k == 5 && count5 > 0)) {
-        cout << 0 << "\n";
-        return;
+    if((k == 2 && two > 0) || (k == 3 && three > 0) || (k == 4 && two > 1) || (k == 5 && five > 0)){
+        cout<<0<<endl; return;
     }
-
-    cout << res << "\n";
-
+    if(res2 != INT_MAX && res3 != INT_MAX) res = min(res, 4-res2-res3);
+    cout<<res<<endl;    
 }
 
 signed main() {   
