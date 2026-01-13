@@ -212,3 +212,5 @@ Value = (-1)^sign x (1 + mantissa) x 2^(exponent - bias)
 ---
 
 ## Methods
+## Classes
+## Interface

@@ -22,5 +22,6 @@ public class colPrac {
             int num = iterator.next();
             System.out.println(num);
             // iterator.remove(); // For removing elements
+        }
     }
 }

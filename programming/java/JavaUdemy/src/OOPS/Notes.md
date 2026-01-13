@@ -20,8 +20,11 @@
    - It bundles data and code working on data in a single unit. {Data Hiding}
 
 3. Data Inheritance
+Diamond Problem
 
 4. Polymorphism
+Runtime Polymorphism
+Compile time Polymorphism
 
 ## Extra
 

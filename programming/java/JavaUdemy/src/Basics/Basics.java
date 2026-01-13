@@ -5,7 +5,8 @@ public class Basics {
     static int classVar;
 
     public int newClass(int parameter){
-        int localVar;
+        int localVar = parameter;
+        return localVar;
     }
 
 }
