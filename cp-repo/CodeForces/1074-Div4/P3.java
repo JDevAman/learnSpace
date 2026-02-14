@@ -49,33 +49,29 @@ public class P3 {
 
     static void solve(FastReader fr, PrintWriter out) {
         int n = fr.nextInt();
-        int k = fr.nextInt();
-        
-        int minOps = k; 
-        int evenCount = 0;
-        boolean alreadyDivisible = false;
+        ArrayList<Long> nums = new ArrayList<>();
 
-        for (int i = 0; i < n; i++) {
-            int val = fr.nextInt();
-            if (val % 2 == 0) evenCount++;
-            
-            int mod = val % k;
-            if (mod == 0) alreadyDivisible = true;
-            
-            minOps = Math.min(minOps, k - mod);
+        // Find longest subarray having max - min as greatest.
+        for(int i=0; i<n; i++){
+            long x = fr.nextLong();
+            nums.add(x);
         }
 
-        if (alreadyDivisible) {
-            out.println(0);
-            return;
+        Collections.sort(nums);
+        long exNum = nums.get(0) + 1, maxDiff = 0;
+        int start = 0;
+        for(int i=1; i<n; i++){
+            long curr = nums.get(i);
+            if(curr == exNum) exNum++;
+            else if(curr == exNum-1) continue;
+            else{
+                maxDiff = Math.max(exNum - nums.get(start), maxDiff);
+                start = i;
+                exNum = nums.get(i)+1;
+            }
         }
-
-        // Handle the special case for k=4 (2 * 2 = 4)
-        if (k == 4) {
-            int opsForTwoEvens = Math.max(0, 2 - evenCount);
-            minOps = Math.min(minOps, opsForTwoEvens);
-        }
-
-        out.println(minOps);
+        maxDiff = Math.max(exNum - nums.get(start), maxDiff); 
+        maxDiff = maxDiff == 0 ? 1 : maxDiff;
+        out.println(maxDiff);
     }
 }

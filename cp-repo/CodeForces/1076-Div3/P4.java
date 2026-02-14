@@ -1,7 +1,7 @@
 import java.io.*;
 import java.util.*;
 
-public class P3 {
+public class P4 {
     static class FastReader {
         BufferedReader br;
         StringTokenizer st;
@@ -49,33 +49,43 @@ public class P3 {
 
     static void solve(FastReader fr, PrintWriter out) {
         int n = fr.nextInt();
-        int k = fr.nextInt();
+        long[] strength = new long[n];
+        long[] hits = new long[n];
+
+        for(int i=0; i<n; i++) strength[i] = fr.nextLong();
+        for(int i=0; i<n; i++) hits[i] = fr.nextLong();
         
-        int minOps = k; 
-        int evenCount = 0;
-        boolean alreadyDivisible = false;
+        long[] pre = new long[n + 1];
+        for(int i=0; i<n; i++){
+            pre[i+1] = hits[i] + pre[i];
+        }
 
-        for (int i = 0; i < n; i++) {
-            int val = fr.nextInt();
-            if (val % 2 == 0) evenCount++;
+        Arrays.sort(strength);
+
+        long maxScore = 0L;
+        for(int i=0; i<n; i++){
+            long str = strength[i];
+            long remSwords = (long)n - i;
             
-            int mod = val % k;
-            if (mod == 0) alreadyDivisible = true;
+            int levels = bSearch(remSwords, pre);
             
-            minOps = Math.min(minOps, k - mod);
+            long res = str * levels;
+            maxScore = Math.max(maxScore, res);
         }
-
-        if (alreadyDivisible) {
-            out.println(0);
-            return;
+        out.println(maxScore);
+    }
+    static int bSearch(long key, long[] pre) {
+        int s = 0, e = pre.length - 1;
+        int res = 0;
+        while (s <= e) {
+            int mid = s + (e - s) / 2;
+            if (pre[mid] <= key) {
+                res = mid;
+                s = mid + 1;
+            } else {
+                e = mid - 1;
+            }
         }
-
-        // Handle the special case for k=4 (2 * 2 = 4)
-        if (k == 4) {
-            int opsForTwoEvens = Math.max(0, 2 - evenCount);
-            minOps = Math.min(minOps, opsForTwoEvens);
-        }
-
-        out.println(minOps);
+        return res;
     }
 }

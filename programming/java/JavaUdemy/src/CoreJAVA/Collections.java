@@ -1,7 +1,7 @@
-package Collections;
+package CoreJAVA;
 import java.util.*;
 
-public class colPrac {
+public class Collections {
     public static void main(String[] args) {
         List<Integer> nums = Arrays.asList(1, 2, 3, 4, 5);
 

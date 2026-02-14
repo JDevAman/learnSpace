@@ -1,6 +1,6 @@
 # Distributed DBMS
 
-## Distributed Systems Basics  
+## Distributed Systems CoreJAVA  
 
 ## Replication & Consistency Models  
 

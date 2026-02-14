@@ -49,33 +49,50 @@ public class P3 {
 
     static void solve(FastReader fr, PrintWriter out) {
         int n = fr.nextInt();
-        int k = fr.nextInt();
-        
-        int minOps = k; 
-        int evenCount = 0;
-        boolean alreadyDivisible = false;
+        int q = fr.nextInt();
+        ArrayList<Long> a = new ArrayList<>(n);
+        ArrayList<Long> b = new ArrayList<>(n);
+        ArrayList<int[]> qs = new ArrayList<>(q);
 
-        for (int i = 0; i < n; i++) {
-            int val = fr.nextInt();
-            if (val % 2 == 0) evenCount++;
-            
-            int mod = val % k;
-            if (mod == 0) alreadyDivisible = true;
-            
-            minOps = Math.min(minOps, k - mod);
+        for(int i=0; i<n; i++) a.add(fr.nextLong()); 
+        for(int i=0; i<n; i++) b.add(fr.nextLong());
+        for(int i=0; i<q; i++){
+            qs.add(new int[]{fr.nextInt(), fr.nextInt()});
         }
 
-        if (alreadyDivisible) {
-            out.println(0);
-            return;
+        long maxEle = 0L;
+        for(int i=n-1; i>=0; i--){
+            maxEle = Math.max(a.get(i), Math.max(b.get(i), maxEle));
+            a.set(i, maxEle);
         }
 
-        // Handle the special case for k=4 (2 * 2 = 4)
-        if (k == 4) {
-            int opsForTwoEvens = Math.max(0, 2 - evenCount);
-            minOps = Math.min(minOps, opsForTwoEvens);
+        ArrayList<Long> pre = new ArrayList<>(n+1); 
+        pre.add(0L);
+        for(int i=0; i<n; i++){
+            pre.add(a.get(i) + pre.get(i));
         }
 
-        out.println(minOps);
+        // out.println("a: ");
+        // for(int i=0; i<n; i++){
+        //     out.print(a.get(i)+" ");
+        // }
+
+        // out.println();
+        // out.println("pre: ");
+        // for(int i=0; i<=n; i++){
+        //     out.print(pre.get(i)+" ");
+        // }
+
+        // out.println();
+
+        for(int i=0; i<q; i++){
+            long res = 0L;
+
+            int[] query = qs.get(i); 
+            int l = query[0], r = query[1];
+            res = pre.get(r) - pre.get(l-1);
+            out.print(res+" ");
+        }
+        out.println();
     }
 }

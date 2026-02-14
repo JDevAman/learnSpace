@@ -1,7 +1,7 @@
 import java.io.*;
 import java.util.*;
 
-public class P3 {
+public class P4 {
     static class FastReader {
         BufferedReader br;
         StringTokenizer st;
@@ -48,34 +48,48 @@ public class P3 {
     }
 
     static void solve(FastReader fr, PrintWriter out) {
-        int n = fr.nextInt();
-        int k = fr.nextInt();
-        
-        int minOps = k; 
-        int evenCount = 0;
-        boolean alreadyDivisible = false;
+        long n = fr.nextLong();
+        long p = fr.nextLong();
 
-        for (int i = 0; i < n; i++) {
-            int val = fr.nextInt();
-            if (val % 2 == 0) evenCount++;
-            
-            int mod = val % k;
-            if (mod == 0) alreadyDivisible = true;
-            
-            minOps = Math.min(minOps, k - mod);
+        Long res = p;
+        
+
+        ArrayList<Long> a = new ArrayList<>();
+        ArrayList<Long> b = new ArrayList<>();
+        TreeMap<Long, Long> mpp = new TreeMap<>();
+
+        for(int i=0; i<n; i++){
+            long x = fr.nextLong();
+            a.add(x);
+        }
+        for(int i=0; i<n; i++){
+            long x = fr.nextLong();
+            b.add(x);
+        }    
+
+        for(int i=0; i<n; i++){
+            if(b.get(i) <= p){
+                mpp.put(b.get(i), mpp.getOrDefault(b.get(i), 0L) + a.get(i));
+            }
         }
 
-        if (alreadyDivisible) {
-            out.println(0);
+        if(n == 1){
+            out.println(res);
             return;
         }
 
-        // Handle the special case for k=4 (2 * 2 = 4)
-        if (k == 4) {
-            int opsForTwoEvens = Math.max(0, 2 - evenCount);
-            minOps = Math.min(minOps, opsForTwoEvens);
+        int currCnt = 1;
+        for(Map.Entry<Long, Long> record: mpp.entrySet()){
+            if(currCnt >= n) break;
+            long minOccur = Math.min(n-currCnt, record.getValue());
+            res += (record.getKey() *  minOccur);
+            currCnt += minOccur; 
         }
 
-        out.println(minOps);
+        if(currCnt < n){
+            res += p*(n-currCnt);
+        }
+
+        out.println(res);
     }
 }

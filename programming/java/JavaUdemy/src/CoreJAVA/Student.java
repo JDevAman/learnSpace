@@ -1,4 +1,4 @@
-package OOPS;
+package CoreJAVA;
 import OOPS.StudentRecord;
 
 //  Abstraction: Interface hides logic

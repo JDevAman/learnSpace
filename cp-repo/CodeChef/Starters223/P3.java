@@ -49,33 +49,9 @@ public class P3 {
 
     static void solve(FastReader fr, PrintWriter out) {
         int n = fr.nextInt();
-        int k = fr.nextInt();
-        
-        int minOps = k; 
-        int evenCount = 0;
-        boolean alreadyDivisible = false;
+        ArrayList<Long> nums = new ArrayList<>(n);
+        for(int i=0; i<n; i++) nums.add(fr.nextLong());
 
-        for (int i = 0; i < n; i++) {
-            int val = fr.nextInt();
-            if (val % 2 == 0) evenCount++;
-            
-            int mod = val % k;
-            if (mod == 0) alreadyDivisible = true;
-            
-            minOps = Math.min(minOps, k - mod);
-        }
-
-        if (alreadyDivisible) {
-            out.println(0);
-            return;
-        }
-
-        // Handle the special case for k=4 (2 * 2 = 4)
-        if (k == 4) {
-            int opsForTwoEvens = Math.max(0, 2 - evenCount);
-            minOps = Math.min(minOps, opsForTwoEvens);
-        }
-
-        out.println(minOps);
+        out.println();
     }
 }

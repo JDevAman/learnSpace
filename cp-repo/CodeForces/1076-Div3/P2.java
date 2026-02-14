@@ -1,7 +1,7 @@
 import java.io.*;
 import java.util.*;
 
-public class P3 {
+public class P2 {
     static class FastReader {
         BufferedReader br;
         StringTokenizer st;
@@ -49,33 +49,43 @@ public class P3 {
 
     static void solve(FastReader fr, PrintWriter out) {
         int n = fr.nextInt();
-        int k = fr.nextInt();
+
+        HashMap<Integer, Integer> pos = new HashMap<>();
+        ArrayList<Integer> nums = new ArrayList<>();
+
+        for(int i=0; i<n; i++){
+            int x = fr.nextInt();
+            nums.add(x);    
+            pos.put(x, i);
+        }
+
+        int revS = -1, revE = n+1;
+        for(int i=0; i<n; i++){
+            int curr = nums.get(i);
+            int exp = n-i;
+            if(curr !=  exp){
+                int exPos = pos.get(exp);
+                revS = i;
+                revE = exPos;
+                break;
+            }
+            out.print(curr+" ");
+        }
         
-        int minOps = k; 
-        int evenCount = 0;
-        boolean alreadyDivisible = false;
-
-        for (int i = 0; i < n; i++) {
-            int val = fr.nextInt();
-            if (val % 2 == 0) evenCount++;
-            
-            int mod = val % k;
-            if (mod == 0) alreadyDivisible = true;
-            
-            minOps = Math.min(minOps, k - mod);
+        if(revS > -1){
+            for(int i=revE; i>=revS; i--){
+                int curr = nums.get(i);
+                out.print(curr+" ");
+            }
         }
 
-        if (alreadyDivisible) {
-            out.println(0);
-            return;
+        if(revE < n-1){
+            for(int i=revE+1; i<n; i++){
+                int curr = nums.get(i);
+                out.print(curr+" ");
+            }
         }
 
-        // Handle the special case for k=4 (2 * 2 = 4)
-        if (k == 4) {
-            int opsForTwoEvens = Math.max(0, 2 - evenCount);
-            minOps = Math.min(minOps, opsForTwoEvens);
-        }
-
-        out.println(minOps);
+        out.println();
     }
 }

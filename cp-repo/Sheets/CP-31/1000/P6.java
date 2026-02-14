@@ -1,7 +1,7 @@
 import java.io.*;
 import java.util.*;
 
-public class P3 {
+public class P6 {
     static class FastReader {
         BufferedReader br;
         StringTokenizer st;
@@ -50,32 +50,31 @@ public class P3 {
     static void solve(FastReader fr, PrintWriter out) {
         int n = fr.nextInt();
         int k = fr.nextInt();
-        
-        int minOps = k; 
-        int evenCount = 0;
-        boolean alreadyDivisible = false;
+        int q = fr.nextInt();
 
-        for (int i = 0; i < n; i++) {
-            int val = fr.nextInt();
-            if (val % 2 == 0) evenCount++;
-            
-            int mod = val % k;
-            if (mod == 0) alreadyDivisible = true;
-            
-            minOps = Math.min(minOps, k - mod);
+        ArrayList<Long> a = new ArrayList<>();
+        for(int i=0; i<n; i++){
+            long x = fr.nextLong();
+            a.add(x);
         }
 
-        if (alreadyDivisible) {
-            out.println(0);
-            return;
+        // Find subarray of longest len >= k multiple times and keep adding.
+        long res = 0;
+        long cnt = 0;
+        for(int i=0; i<n; i++){
+            if(a.get(i) <= q) cnt++;
+            else{
+                if(cnt >= k){
+                    long diff = cnt - k + 1;
+                    res += (diff * (diff + 1))/2;
+                }
+                cnt = 0;
+            }
         }
-
-        // Handle the special case for k=4 (2 * 2 = 4)
-        if (k == 4) {
-            int opsForTwoEvens = Math.max(0, 2 - evenCount);
-            minOps = Math.min(minOps, opsForTwoEvens);
+        if(cnt >= k){
+            long diff = cnt - k + 1;
+            res += (diff * (diff + 1))/2;
         }
-
-        out.println(minOps);
+        out.println(res);
     }
 }

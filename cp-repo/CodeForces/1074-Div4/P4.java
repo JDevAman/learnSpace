@@ -1,7 +1,7 @@
 import java.io.*;
 import java.util.*;
 
-public class P3 {
+public class P4 {
     static class FastReader {
         BufferedReader br;
         StringTokenizer st;
@@ -48,34 +48,35 @@ public class P3 {
     }
 
     static void solve(FastReader fr, PrintWriter out) {
-        int n = fr.nextInt();
-        int k = fr.nextInt();
-        
-        int minOps = k; 
-        int evenCount = 0;
-        boolean alreadyDivisible = false;
-
-        for (int i = 0; i < n; i++) {
-            int val = fr.nextInt();
-            if (val % 2 == 0) evenCount++;
-            
-            int mod = val % k;
-            if (mod == 0) alreadyDivisible = true;
-            
-            minOps = Math.min(minOps, k - mod);
+        int n = fr.nextInt(), m = fr.nextInt(), h = fr.nextInt();
+        ArrayList<Long> nums = new ArrayList<>();
+        for(int i=0; i<n; i++){
+            long x = fr.nextLong();
+            nums.add(x);
         }
 
-        if (alreadyDivisible) {
-            out.println(0);
-            return;
+        TreeMap<Integer, Long> changes= new TreeMap<>();
+        for(int i=0; i<m; i++){
+            int idx = fr.nextInt();
+            long toAdd = fr.nextLong();
+            long exChgVal = changes.getOrDefault(idx - 1, 0L);
+            long currVal = nums.get(idx -1) + exChgVal;
+            if(currVal + toAdd > h){
+                changes.clear();
+            }else{
+                changes.put(idx - 1, exChgVal+toAdd);
+            }
         }
 
-        // Handle the special case for k=4 (2 * 2 = 4)
-        if (k == 4) {
-            int opsForTwoEvens = Math.max(0, 2 - evenCount);
-            minOps = Math.min(minOps, opsForTwoEvens);
+        for(Map.Entry<Integer,Long> record: changes.entrySet()){
+            int idx = record.getKey();
+            long delta = record.getValue();
+            nums.set(idx, nums.get(idx)+delta);
         }
 
-        out.println(minOps);
+        for(int i=0; i<n; i++){
+            out.print(nums.get(i)+ " ");
+        }
+        out.println();
     }
 }

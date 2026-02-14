@@ -1,7 +1,7 @@
 import java.io.*;
 import java.util.*;
 
-public class P3 {
+public class P2 {
     static class FastReader {
         BufferedReader br;
         StringTokenizer st;
@@ -48,34 +48,21 @@ public class P3 {
     }
 
     static void solve(FastReader fr, PrintWriter out) {
-        int n = fr.nextInt();
-        int k = fr.nextInt();
-        
-        int minOps = k; 
-        int evenCount = 0;
-        boolean alreadyDivisible = false;
-
-        for (int i = 0; i < n; i++) {
-            int val = fr.nextInt();
-            if (val % 2 == 0) evenCount++;
-            
-            int mod = val % k;
-            if (mod == 0) alreadyDivisible = true;
-            
-            minOps = Math.min(minOps, k - mod);
-        }
-
-        if (alreadyDivisible) {
+        int n = fr.nextInt(), x = fr.nextInt(), k = fr.nextInt();
+        if(x%k == 0){
             out.println(0);
             return;
         }
-
-        // Handle the special case for k=4 (2 * 2 = 4)
-        if (k == 4) {
-            int opsForTwoEvens = Math.max(0, 2 - evenCount);
-            minOps = Math.min(minOps, opsForTwoEvens);
+        // Remove
+        int remove = x%k;
+        int add = k-remove;
+        int res = n;
+        if(n-x >= add){
+            res = Math.min(remove, add);
         }
-
-        out.println(minOps);
+        else{
+            res = remove;
+        }
+        out.println(res);
     }
 }

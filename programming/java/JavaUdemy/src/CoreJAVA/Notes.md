@@ -1,4 +1,4 @@
-# JAVA Basics
+# JAVA CoreJAVA
 
 ## ✅ What is a Variable?
 
