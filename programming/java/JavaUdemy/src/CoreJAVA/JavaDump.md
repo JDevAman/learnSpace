@@ -9,7 +9,7 @@ My all-in-one java notes for quick revision file.
 2. static
    used with property, method so that it is associated with class and not instance.
 3. final
-   Used with propery to ensure that it cant be changed (reference).
+   Used with property to ensure that it cant be changed (reference).
 4. synchronized
    Used in concurrency to ensure it is synchronzied
 5. volatile

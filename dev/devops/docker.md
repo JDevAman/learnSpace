@@ -17,6 +17,7 @@ docker run -d -p 27018:27017 mongo
 ### Containers
 
 - Run Containers: docker run <image>
+- Start Container: docker start <container>
 - Run Detached: docker run -d <image>
 - Run w/ ports: docker run -d -p 3000:3000 <image>
 - Run w/ env: docker run -p 3000:3000 -e DATABASE_URL = '' <image>
