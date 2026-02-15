@@ -22,7 +22,8 @@ docker run -d -p 27018:27017 mongo
 - Run w/ ports: docker run -d -p 3000:3000 <image>
 - Run w/ env: docker run -p 3000:3000 -e DATABASE_URL = '' <image>
 - Exec Inside Container: docker exec -it <container-id> /bin/bash
-- List running: docker ps
+- Run psql inside container: docker exec -it <container_name> psql -U <db_username>
+- List all containers: docker ps -a
 - Kill Container: docker kill <id>
 - Remove Container: docker rm <id>
 

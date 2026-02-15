@@ -18,82 +18,82 @@ Fastest Node.js framework available.
 
 ## ECOSYSTEM
 
-1.  ContentTypeParser:
-    - Supports application/json and text/plain with default charset of utf-8.
-    - Unsupported content thorws 'FST_ERR_CTP_INVALID_MEDIA_TYPE' error.
-    - To Support other Content Types:
-    - use _addContentTypeParser_ API
-      - this is encapsulated in scope it is declared.
-    - For 'GET' and 'HEAD', requests are not parsed.
-    - For 'OPTIONS' and 'DELETE', it is parsed only if valid content-type header is provided.
-    - For piping file uploads, @fastify/multipart can be used.
-    - Usage:
-      - hasContentTypeParser, removeContentTypeParser, removeAllContentTypeParser
-    - BodyParser: customParserOptions such as _parseAs_, _bodyLimit(number)_
+1. ContentTypeParser:
+   - Supports application/json and text/plain with default charset of utf-8.
+   - Unsupported content thorws 'FST_ERR_CTP_INVALID_MEDIA_TYPE' error.
+   - To Support other Content Types:
+   - use _addContentTypeParser_ API
+     - this is encapsulated in scope it is declared.
+   - For 'GET' and 'HEAD', requests are not parsed.
+   - For 'OPTIONS' and 'DELETE', it is parsed only if valid content-type header is provided.
+   - For piping file uploads, @fastify/multipart can be used.
+   - Usage:
+     - hasContentTypeParser, removeContentTypeParser, removeAllContentTypeParser
+   - BodyParser: customParserOptions such as _parseAs_, _bodyLimit(number)_
 
-2.  Decorator:
-    - It is _synchronous_ API which is used to customize core Fastify Objects, such as server or request object during HTTP lifecycle.
-    - To register async decoration, use `register` API with `fastify-plugin`.
-    - Usage:
-      - decorate(name, value, [dependencies]): modifies fastify `server` instance. dependencies is optional list of decorators that decorator being defined relies upon.
-      - decorateReply(name, value, [dependencies]): modifies fastify `reply` instance.
-      - decorateRequest(name, value, [dependencies]): modifies fastify `request` instance.
-      - hasDecorator(name): check existence of server instance decoration
-      - hasRequestDecorator(name): check existence of request instance decoration
-      - hasReplyDecorator(name): check existence of reply instance decoration
-      - getDecorator(name)
-      - setDecorator(name, value)
-3.  Encapsulation:
-    - Encapsulation context that governs which decorators, registered hooks, and plugins are available to routes.
-    - Sharing Between Contexts:
-      Each context inherits only from its parent contexts. Parent contexts cannot access entities within their descendant contexts. If needed, encapsulation can be broken using fastify-plugin, making anything registered in a descendant context available to the parent context.
-4.  Errors:
-    - Fastify follows an all-or-nothing approach and aims to be lean and optimal. Dev is responsible for proper error handling.
-5.  HTTP2:
-    - Fastify supports HTTP2 over HTTPS (h2) or plaintext (h2c).
-6.  Hooks:
-    - Hooks are registered with `fastify.addHook` method and allow you to listen to specific events in application or request/response lifecycle. Hook must be registered before an event is triggered, otherwise event is lost. It allows to interact lifecyle of fastify.
-    - Available Hooks:
-      - Request/Reply Hooks:
-        Request and Reply are core fastify objects. `done` is function to continue with lifecycle. Easily understand from LifeCycle section.
-        Hooks are affected by Fastify encapsulation and thus can be applied to set of routes `Scopes`.
+2. Decorator:
+   - It is _synchronous_ API which is used to customize core Fastify Objects, such as server or request object during HTTP lifecycle.
+   - To register async decoration, use `register` API with `fastify-plugin`.
+   - Usage:
+     - decorate(name, value, [dependencies]): modifies fastify `server` instance. dependencies is optional list of decorators that decorator being defined relies upon.
+     - decorateReply(name, value, [dependencies]): modifies fastify `reply` instance.
+     - decorateRequest(name, value, [dependencies]): modifies fastify `request` instance.
+     - hasDecorator(name): check existence of server instance decoration
+     - hasRequestDecorator(name): check existence of request instance decoration
+     - hasReplyDecorator(name): check existence of reply instance decoration
+     - getDecorator(name)
+     - setDecorator(name, value)
+3. Encapsulation:
+   - Encapsulation context that governs which decorators, registered hooks, and plugins are available to routes.
+   - Sharing Between Contexts:
+     Each context inherits only from its parent contexts. Parent contexts cannot access entities within their descendant contexts. If needed, encapsulation can be broken using fastify-plugin, making anything registered in a descendant context available to the parent context.
+4. Errors:
+   - Fastify follows an all-or-nothing approach and aims to be lean and optimal. Dev is responsible for proper error handling.
+5. HTTP2:
+   - Fastify supports HTTP2 over HTTPS (h2) or plaintext (h2c).
+6. Hooks:
+   - Hooks are registered with `fastify.addHook` method and allow you to listen to specific events in application or request/response lifecycle. Hook must be registered before an event is triggered, otherwise event is lost. It allows to interact lifecyle of fastify.
+   - Available Hooks:
+     - Request/Reply Hooks:
+       Request and Reply are core fastify objects. `done` is function to continue with lifecycle. Easily understand from LifeCycle section.
+       Hooks are affected by Fastify encapsulation and thus can be applied to set of routes `Scopes`.
 
-        i. onRequest
-        ii. preParsing: transform request payload stream before it is parsed like decompressing the body.
-        iii. preValidation: transfrom req payload before it is validated.
-        iv. preHandler: specify function to be executed before routes handler like auth middleware.
-        v. preSerialization: change the payload before it is serialized. Not Called if: string, buffer, stream or null.
-        vi. onError: used for custom Error Logging or setting specific header in case of an error.
-        vii. onSend: used to transform payload before sending response to client.
-        viii. onResponse: exceuted once client response is sent. Used to send statistics to external service ie monitoring.
-        ix. onTimeout: executed when a request is timed out and the HTTP socket has been hung up. no data sent to client.
-        x. onRequestAbort: executed when a client closes the connection before the entire request has been processed
+       i. onRequest
+       ii. preParsing: transform request payload stream before it is parsed like decompressing the body.
+       iii. preValidation: transfrom req payload before it is validated.
+       iv. preHandler: specify function to be executed before routes handler like auth middleware.
+       v. preSerialization: change the payload before it is serialized. Not Called if: string, buffer, stream or null.
+       vi. onError: used for custom Error Logging or setting specific header in case of an error.
+       vii. onSend: used to transform payload before sending response to client.
+       viii. onResponse: exceuted once client response is sent. Used to send statistics to external service ie monitoring.
+       ix. onTimeout: executed when a request is timed out and the HTTP socket has been hung up. no data sent to client.
+       x. onRequestAbort: executed when a client closes the connection before the entire request has been processed
 
-      - Application Hooks:
-        i. onReady: Triggered before the server starts listening for requests. Cant change routes or add new hooks.
-        ii. onListen: Triggered when the server starts listening for requests
-        iii. onClose: Triggered when fastify.close() is invoked to stop the server, after all in-flight HTTP requests have been completed. It is useful when plugins need a "shutdown" event, for example, to close an open connection to a database.
-        iv. preClose: Triggered when fastify.close() is invoked to stop the server, before all in-flight HTTP requests have been completed
-        v. onRoute: Triggered when a new route is registered. Listeners are passed a routeOptions object as the sole parameter.
-        vi. onRegister: Triggered when a new plugin is registered and a new encapsulation context is created. executed before the registered code.
+     - Application Hooks:
+       i. onReady: Triggered before the server starts listening for requests. Cant change routes or add new hooks.
+       ii. onListen: Triggered when the server starts listening for requests
+       iii. onClose: Triggered when fastify.close() is invoked to stop the server, after all in-flight HTTP requests have been completed. It is useful when plugins need a "shutdown" event, for example, to close an open connection to a database.
+       iv. preClose: Triggered when fastify.close() is invoked to stop the server, before all in-flight HTTP requests have been completed
+       v. onRoute: Triggered when a new route is registered. Listeners are passed a routeOptions object as the sole parameter.
+       vi. onRegister: Triggered when a new plugin is registered and a new encapsulation context is created. executed before the registered code.
 
-    - Scope:
-      - Except for onClose, all hooks are encapsulated. Means we can control where hoooks run by using register.
-    - Route Level Hooks
-      - Custom lifecycle hooks can can be defined that are unique to route. These hooks will be executed as last in their category.
+   - Scope:
+     - Except for onClose, all hooks are encapsulated. Means we can control where hoooks run by using register.
+   - Route Level Hooks
+     - Custom lifecycle hooks can can be defined that are unique to route. These hooks will be executed as last in their category.
 
-7.  LifeCycle
-    - Routing -> Instance Logger -> Parsing -> Validation -> User Handler -> Reply -> Outgoing Response
-8.  Logging
-    - Uses pino as logger, and logging is disabled by default. Can't be enabled at runtime.
-    - Environment based logging is also available.
-    - Usage:
-      - Request Id Tracking: By default, fasify adds an ID to every request for easier tracking. `requestIdHeader` header is reused or new value is generated
-      - Custom Logger: custom logger can be supplied by passing it as loggerInstance.
-      - Log redaction: pino supports obscurity by removing any sensitive information.
+7. LifeCycle
+   - Routing -> Instance Logger -> Parsing -> Validation -> User Handler -> Reply -> Outgoing Response
+8. Logging
+   - Uses pino as logger, and logging is disabled by default. Can't be enabled at runtime.
+   - Environment based logging is also available.
+   - Usage:
+     - Request Id Tracking: By default, fasify adds an ID to every request for easier tracking. `requestIdHeader` header is reused or new value is generated
+     - Custom Logger: custom logger can be supplied by passing it as loggerInstance.
+     - Log redaction: pino supports obscurity by removing any sensitive information.
 
-9.  Middlewares
-    - Middleware is not supported out of box and requires external plugin such as @fastify/express or @fastify/middle
+9. Middlewares
+   - Middleware is not supported out of box and requires external plugin such as @fastify/express or @fastify/middle
 10. Plugins
     - Used to extend fastify, which can be set of routes, a server decorator of functionality. Uses `register` API to add plugins.
     - By default, `register` creates new scope which meams changes to fastify instance will not affect current context ancestors only descendants.
@@ -190,3 +190,10 @@ Fastest Node.js framework available.
 - Encapsulation vs. Global: New users often forget that decorate stays inside the folder/plugin where it was called. If you want a database connection to be "global," you must wrap your database plugin with fastify-plugin.
 - CORS: Unlike Express, Fastify doesn't have a built-in "all-access" default. You almost always need @fastify/cors immediately.
 - Prisma Setup: [Prisma v7 Setup](https://www.prisma.io/docs/orm/more/upgrade-guides/upgrading-versions/upgrading-to-prisma-7#driver-adapters-and-client-instantiation)
+
+### TRADEOFFS
+
+1. Hooks vs decorator
+   - Decorators (Explicit): Use these for Policies. Authentication, Authorization (RBAC), and specific Data Validation fall here. You want to see preHandler: [fastify.authenticate] in the route definition so the next developer knows exactly why a 401 might be returned.
+   - Hooks (Implicit): Use these for Observability. Tracing (Request IDs), Metrics (Prometheus/Grafana), and Logging should happen "in the shadows." You don't want to manually add a tracing hook to 50 different routes; you want it to happen automatically for every byte that hits the server.
+

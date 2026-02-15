@@ -11,9 +11,12 @@
   "type": "module",
   "description": "",
   "dependencies": {
+    "@fastify/cookie": "^11.0.2",
     "@fastify/env": "^5.0.3",
+    "@fastify/jwt": "^10.0.0",
     "@prisma/adapter-pg": "^7.4.0",
     "@prisma/client": "^7.4.0",
+    "bcrypt": "^6.0.0",
     "fastify": "^5.7.4",
     "fastify-plugin": "^5.1.0"
   },

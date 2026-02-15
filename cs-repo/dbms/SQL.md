@@ -11,3 +11,10 @@
 | exit' or quit;        | \q              |
 
 - In PostgreSQL, if table name is capital: you need enclose in double quotes.
+
+SQL:
+
+1. Check Data:
+   SELECT \* FROM <table_name>;
+2. Delete Data:
+   DELETE FROM <table_name>; or TRUNCATE <table_name>;
