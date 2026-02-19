@@ -154,6 +154,10 @@ Verify **real user flows** across the full system.
 
 ---
 
+## Running
+
+- In monorepo, create root vitest.config.ts and then provide lean vitest.config.ts in apps or packages.
+
 ## Notes
 
 - This is my first project with a serious testing setup.

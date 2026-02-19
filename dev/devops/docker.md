@@ -80,8 +80,9 @@ Docker compose takes away pain of configuring.
 
 ## Docker Compose (Multi-Container Setup)
 
-A tool to manage multi-container apps (API + DB + Redis etc.)
+**VERY IMPORTANT**
 
+A tool to manage multi-container apps (API + DB + Redis etc.)
 compose.yml:
 
 ```yml
@@ -115,7 +116,7 @@ Run:
  docker compose down # stop + remove
 ```
 
-## Backend Dev Must - Knows:
+## Backend Dev Must - Knows
 
 ### Bind Mount
 
