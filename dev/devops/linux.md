@@ -47,3 +47,8 @@ Essential commands to check system status and work efficiently.
 - sudo apt update
 - sudo apt updgrade -y
 - sudo apt install <package>
+
+### systemd
+systemd is a suite of basic building blocks for a Linux system. It provides a system and service manager that runs as PID 1 and starts the rest of the system.
+
+systemd provides aggressive parallelization capabilities, uses socket and D-Bus activation for starting services, offers on-demand starting of daemons, keeps track of processes using Linux control groups, maintains mount and automount points, and implements an elaborate transactional dependency-based service control logi

@@ -6,34 +6,34 @@ Goal: To build reliable, scalable, fault-tolerant, and maintainable systems, mov
 
 Status: ⬜ Not Started | 🟦 In Progress | ✅ Completed
 
-[⬜] High-Level Understanding
+[✅] High-Level Understanding
 
 - Request flow: Browser → Server → Response.
 
-[ ] HTTP Protocol Deep Dive
+[✅] HTTP Protocol Deep Dive
 
 - Headers, Methods (GET, POST, etc.), and Status Codes.
 - CORS (Simple vs. Pre-flight).
 - Caching (ETags, Max-Age).
 - Versions (HTTP/1.1, 2.0, 3.0) and Security (TLS/SSL).
 
-[ ] Routing
+[✅] Routing
 
 - Static, Dynamic, and Regex-based routes.
 - API Versioning & Route Grouping.
 
-[ ] Serialization & Deserialization
+[✅] Serialization & Deserialization
 
 - Formats: JSON/XML vs. Binary (Protobuf).
 - Security: Validation before deserialization.
 
-[ ] Authentication & Authorization
+[✅] Authentication & Authorization
 
 - State (Sessions) vs. Stateless (JWT).
 - Models: RBAC, ABAC, ReBAC.
 - Security: Hashing, Salting, CSRF/XSS protection.
 
-[ ] Validation & Transformation
+[🟦] Validation & Transformation
 
 - Syntactic vs. Semantic validation.
 - Sanitization (Preventing SQL Injection).
@@ -80,13 +80,13 @@ Status: ⬜ Not Started
 
 Status: ⬜ Not Started
 
-[ ] Databases (17:08)
+[✅] Databases
 
 - ACID properties and CAP Theorem.
 - Relational vs. NoSQL.
 - Indexing and Query Optimization.
 
-[ ] Caching Strategies (18:51)
+[✅] Caching Strategies
 
 - Cache-aside, Write-through, Write-behind.
 - Eviction: LRU, LFU, TTL.
@@ -156,6 +156,7 @@ Status: ⬜ Not Started
 - Secret Management (Vault, AWS Secrets Manager).
 
 ---
+
 🛠️ Walking this path
 
 To truly learn from "First Principles," do not just watch the videos. Follow this Study-Build-Audit cycle for each major section:
@@ -165,7 +166,7 @@ To truly learn from "First Principles," do not just watch the videos. Follow thi
    Ask "Why": For every topic, ask: "What problem does this solve?" and "What happens if I don't use this?"
 
 2. The "Implementation" Phase (Practical)
-   Implementation of Philosophy and Study part from scratch. 
+   Implementation of Philosophy and Study part from scratch.
    Try "Breaking" it ie reverse engineering.
 
 3. The "Audit" Phase (Reflection)
