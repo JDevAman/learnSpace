@@ -9,6 +9,7 @@ Link: [Git Doc](https://git-scm.com/docs/)
 - New Branch: git checkout -b <branch_name>
 - Branch: git checkout <branch_name>
 - Delete Branch: git branch -d <branch_name>
+- Delete Remote branch: git push origin --delete <branch_name>
 - Show branch: git branch
 - Add Remote Origin: git remote add origin <url>
 - Set Remote Origin: git remote set-url origin <url>

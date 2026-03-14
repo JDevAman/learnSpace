@@ -21,15 +21,15 @@ DataType variableName = value;
 
 ### Java Characteristics:
 
-* **Statically Typed**: Data types must be declared.
-* **Strongly Typed**: Data types have strict rules and defined ranges.
+- **Statically Typed**: Data types must be declared.
+- **Strongly Typed**: Data types have strict rules and defined ranges.
 
 ### Naming Rules:
 
-* Case-sensitive
-* Start with a letter, `$`, or `_`
-* Cannot use reserved keywords
-* Use `camelCase` for variables and `UPPER_CASE` for constants
+- Case-sensitive
+- Start with a letter, `$`, or `_`
+- Cannot use reserved keywords
+- Use `camelCase` for variables and `UPPER_CASE` for constants
 
 ### Constant Variables:
 
@@ -42,7 +42,7 @@ Use `static final` to define constants.
 #### 1. Primitive Types
 
 | Type      | Size    | Range / Notes                                               |
-|-----------|---------|-------------------------------------------------------------|
+| --------- | ------- | ----------------------------------------------------------- |
 | `char`    | 2 bytes | 0 to 65535. Can use int literals like `char c = 65; // 'A'` |
 | `byte`    | 1 byte  | -128 to 127 (2's complement)                                |
 | `short`   | 2 bytes | -32,768 to 32,767                                           |
@@ -54,8 +54,8 @@ Use `static final` to define constants.
 
 #### 2. Reference Types
 
-* Holds reference (address) of actual object in memory.
-* Java is **pass-by-value** even for references (value of address is passed).
+- Holds reference (address) of actual object in memory.
+- Java is **pass-by-value** even for references (value of address is passed).
 
 ##### Example:
 
@@ -73,36 +73,33 @@ public static void modify(Employee emp) {
 
 #### Special Reference Types
 
-* **String**
+- **String**
+  - Immutable
+  - Stored in **String Constant Pool** (if literal)
+  - `new String()` creates new object on heap
+  - Use `.equals()` to compare content, `==` compares reference
 
-    * Immutable
-    * Stored in **String Constant Pool** (if literal)
-    * `new String()` creates new object on heap
-    * Use `.equals()` to compare content, `==` compares reference
+- **Interface**
+  - Cannot be instantiated
+  - Interface type can hold reference to child class object
 
-* **Interface**
-
-    * Cannot be instantiated
-    * Interface type can hold reference to child class object
-
-* **Array**
-
-    * Fixed-size sequence of elements
-    * Example: `int[] arr = new int[5];`
-    * 2D Array: `int[][] matrix = new int[5][4];`
+- **Array**
+  - Fixed-size sequence of elements
+  - Example: `int[] arr = new int[5];`
+  - 2D Array: `int[][] matrix = new int[5][4];`
 
 #### Wrappers
 
-* Each primitive has a wrapper class: `int` -> `Integer`, `char` -> `Character`
-* Stored in heap
-* Used in collections
-* **Autoboxing**: primitive to wrapper
-* **Unboxing**: wrapper to primitive
+- Each primitive has a wrapper class: `int` -> `Integer`, `char` -> `Character`
+- Stored in heap
+- Used in collections
+- **Autoboxing**: primitive to wrapper
+- **Unboxing**: wrapper to primitive
 
 #### Static
 
-* Associated with the class (shared), not object
-* `static final` = Constant at class level
+- Associated with the class (shared), not object
+- `static final` = Constant at class level
 
 ---
 
@@ -111,7 +108,7 @@ public static void modify(Employee emp) {
 #### Memory Layout
 
 | Type   | Total Bits | Sign | Exponent (Bias) | Mantissa |
-|--------|------------|------|-----------------|----------|
+| ------ | ---------- | ---- | --------------- | -------- |
 | Float  | 32         | 1    | 8 (bias 127)    | 23 bits  |
 | Double | 64         | 1    | 11 (bias 1023)  | 52 bits  |
 
@@ -120,61 +117,54 @@ public static void modify(Employee emp) {
 ##### Example: Convert `4.125` to IEEE 754
 
 1. **Binary Conversion**:
-
-    * Integer: `4` -> `100`
-    * Fraction: `0.125` -> `001` (since 0.125 \* 2 = 0.25 \* 2 = 0.5 \* 2 = 1)
-    * Combined: `100.001`
+   - Integer: `4` -> `100`
+   - Fraction: `0.125` -> `001` (since 0.125 \* 2 = 0.25 \* 2 = 0.5 \* 2 = 1)
+   - Combined: `100.001`
 
 2. **Normalization**:
-
-    * Move binary point: `1.00001 x 2^2`
+   - Move binary point: `1.00001 x 2^2`
 
 3. **Exponent with Bias**:
-
-    * 2 + 127 = 129 -> `10000001`
+   - 2 + 127 = 129 -> `10000001`
 
 4. **Mantissa**:
-
-    * Drop leading 1 -> `00001`
-    * Pad to 23 bits -> `00001000000000000000000`
+   - Drop leading 1 -> `00001`
+   - Pad to 23 bits -> `00001000000000000000000`
 
 5. **Final Float Format**:
-
-    * Sign: `0`
-    * Exponent: `10000001`
-    * Mantissa: `00001000000000000000000`
-    * Combined: `0 10000001 00001000000000000000000`
+   - Sign: `0`
+   - Exponent: `10000001`
+   - Mantissa: `00001000000000000000000`
+   - Combined: `0 10000001 00001000000000000000000`
 
 #### IEEE 754 → Decimal
 
 ##### Example: `0 10000001 00001000000000000000000`
 
 1. **Extract Values**:
-
-    * Sign = 0 (positive)
-    * Exponent = 129 - 127 = 2
-    * Mantissa = 1.00001 (implicit 1)
+   - Sign = 0 (positive)
+   - Exponent = 129 - 127 = 2
+   - Mantissa = 1.00001 (implicit 1)
 
 2. **Calculate**:
-
-    * `1.00001 x 2^2 = 100.001 = 4.125`
+   - `1.00001 x 2^2 = 100.001 = 4.125`
 
 #### Special Cases
 
-* Exponent all 1s:
+- Exponent all 1s:
+  - Mantissa = 0 -> Infinity
+  - Mantissa != 0 -> NaN
 
-    * Mantissa = 0 -> Infinity
-    * Mantissa != 0 -> NaN
-* Exponent all 0s -> Denormals/Subnormals
-* Some decimals like 0.7 can't be exactly represented
+- Exponent all 0s -> Denormals/Subnormals
+- Some decimals like 0.7 can't be exactly represented
 
 ##### Example: 0.7
 
-* Binary approx: `0.101100110011...`
-* Normalized: `1.0110011... x 2^-1`
-* Bias: 127 - 1 = 126 → `01111110`
-* Mantissa: `01100110011001100110011`
-* Final: `0 01111110 01100110011001100110011`
+- Binary approx: `0.101100110011...`
+- Normalized: `1.0110011... x 2^-1`
+- Bias: 127 - 1 = 126 → `01111110`
+- Mantissa: `01100110011001100110011`
+- Final: `0 01111110 01100110011001100110011`
 
 #### Formula
 
@@ -188,32 +178,32 @@ Value = (-1)^sign x (1 + mantissa) x 2^(exponent - bias)
 
 ### 1. Widening (Automatic)
 
-* Small type → Larger type
-* No data loss
-* Example: `int → long`
+- Small type → Larger type
+- No data loss
+- Example: `int → long`
 
 ### 2. Narrowing (Explicit)
 
-* Large type → Smaller type
-* Possible data loss
-* Needs casting: `(int) myDouble`
+- Large type → Smaller type
+- Possible data loss
+- Needs casting: `(int) myDouble`
 
 ### 3. Promotion
 
-* In expressions, smaller types promoted
-* `byte + int → int`
+- In expressions, smaller types promoted
+- `byte + int → int`
 
 ### 4. Explicit Casts
 
-* Override promotions
-* Example: `int x = (int)(a + b);`
+- Override promotions
+- Example: `int x = (int)(a + b);`
 
 ---
 
 ### 🔹 Variable Scopes Recap
 
 | Type                  | Scope                 | Notes                         |
-|-----------------------|-----------------------|-------------------------------|
+| --------------------- | --------------------- | ----------------------------- |
 | Local Variable        | Inside method/block   | Must be initialized           |
 | Member Variable       | Class-level, per obj  | Has default values            |
 | Static Variable       | Class-level shared    | Shared across instances       |
@@ -253,21 +243,19 @@ Abstraction:
 - Hiding internal implementation and shows only essential information.
 - Achieved through Abstract Class and Interface.
 
-` Java
+`Java
 Interface Human{
     void walk();
     void speak();
-}
-`
+}`
 
-` Java
+`Java
 public abstract class Human{
     public abstract void walk();
     public void speak(){
         System.out.println('Human Speaks');
     }
-}
-`
+}`
 
 Encapsulation:
 
@@ -359,6 +347,7 @@ Iterable:
 Used to TRAVERSE the collection. Added in Java 1.5
 
 - Methods:
+
 1. iterator()
    - Java 1.5
    - Returns the iterator object, which provides below methods to iterate collection.
@@ -367,10 +356,10 @@ Used to TRAVERSE the collection. Added in Java 1.5
      3. remove(): removes last element returned by iterator
 
 2. forEach()
-    - Java 1.8
-    - Iterate collection using **Lambda** expression. Lambda expression is called for each element in
-      collection.
-    - It uses Consumer {Functional Interface} internally with Iterator
+   - Java 1.8
+   - Iterate collection using **Lambda** expression. Lambda expression is called for each element in
+     collection.
+   - It uses Consumer {Functional Interface} internally with Iterator
 
 Collection:
 Added in Java 1.2
@@ -400,5 +389,3 @@ Algorithms
 Sorting:
 For Array, String
 Collections.sort(ds_name)
-
-

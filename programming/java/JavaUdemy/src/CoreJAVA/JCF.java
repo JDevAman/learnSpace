@@ -55,9 +55,30 @@ public class JCF {
         System.out.println();
         // Comparator
         Integer[] arr = {12, 3, 9, 7, 10};
-        Arrays.sort(arr, (Integer a, Integer b) -> b - a);
+        Arrays.sort(arr, (Integer a, Integer b) -> a - b);
         for(Integer a: arr){
             System.out.println(a+" ");
         }
+
+        List<Student> record = new ArrayList<>();
+        record.add(new Student(2, 12, "Patna"));
+        record.add(new Student(1, 11, "Kolkata"));
+        record.add(new Student(4, 13, "Hyderabad"));
+        Collections.sort(record, (Student s1, Student s2) -> s1.getRollNumber() - s2.getRollNumber());
+        for(Student s: record){
+            System.out.println(s.getRollNumber() + ".." + s.getAddress());
+        }
+        // Comparable
+        Collections.sort(record);
+        System.out.println("Comparable");
+        for(Student s: record){
+            System.out.println(s.getRollNumber() + ".." + s.getAddress());
+        }
+
+        //Priority Queue
+        // Array Deque
+        // Deque
+        // List
+        // ArrayList
     }
 }

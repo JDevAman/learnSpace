@@ -5,7 +5,7 @@ package CoreJAVA;
 //  Polymorphism: getAddress() overridden
 //  Encapsulation: Private fields + public getters/setters
 
-public class Student implements StudentRecord {
+public class Student implements StudentRecord, Comparable<Student> {
     private int rollNumber;
     private int age;
     private String address;
@@ -26,6 +26,14 @@ public class Student implements StudentRecord {
     @Override
     public String getAddress() {
         return this.address;
+    }
+
+    @Override
+    public int getRollNumber(){ return this.rollNumber; }
+
+    @Override
+    public int compareTo(Student s){
+        return this.address.compareTo(s.getAddress());
     }
 
     // Optional Setter

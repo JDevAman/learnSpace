@@ -8,25 +8,25 @@ This is the realm of "Systems Engineering" - managing the movement of electrons 
 ### I. The Critical Bottlenecks
 
 1. Hardware Constraints:
-    - Compute (CPU): The bottleneck is often the overhead of context switching and interrupt handling.
-    - Network (NIC): A standard 10Gbps card will saturate at ~40k RPS if payloads are large. For 1M RPS, you require
-      100Gbps+ or Elastic Network Adapters (ENA).
-    - Memory (RAM): The only storage medium fast enough for real-time processing. Disk I/O is effectively "dead" at this
-      scale.
+   - Compute (CPU): The bottleneck is often the overhead of context switching and interrupt handling.
+   - Network (NIC): A standard 10Gbps card will saturate at ~40k RPS if payloads are large. For 1M RPS, you require
+     100Gbps+ or Elastic Network Adapters (ENA).
+   - Memory (RAM): The only storage medium fast enough for real-time processing. Disk I/O is effectively "dead" at this
+     scale.
 
 2. Software & Stack:
-    - The Runtime Trap:
-        * Node.js/Python: Excellent for I/O-bound tasks, but the Garbage Collector (GC) and
-          single-thread event loop become bottlenecks at extreme scales.
-        * C++/Rust (Drogon/Axum): Used when you must
-          eliminate the overhead of a virtual machine or interpreter to save CPU
-          cycles.
+   - The Runtime Trap:
+     - Node.js/Python: Excellent for I/O-bound tasks, but the Garbage Collector (GC) and
+       single-thread event loop become bottlenecks at extreme scales.
+     - C++/Rust (Drogon/Axum): Used when you must
+       eliminate the overhead of a virtual machine or interpreter to save CPU
+       cycles.
 
-    - Bad Engineering Practices:
-        - O(n) Operations: COUNT(*) or ORDER BY RANDOM() on 10M+ rows will hang the DB for seconds. At 1M RPS, you only
-          use O(1)or O(log n) operations.
-        - Inefficient Serialization: JSON parsing is CPU-intensive. High-performance
-          systems use Protobuf or FlatBuffers.
+   - Bad Engineering Practices:
+     - O(n) Operations: COUNT(\*) or ORDER BY RANDOM() on 10M+ rows will hang the DB for seconds. At 1M RPS, you only
+       use O(1)or O(log n) operations.
+     - Inefficient Serialization: JSON parsing is CPU-intensive. High-performance
+       systems use Protobuf or FlatBuffers.
 
 ### II. Performance Measurements:
 
@@ -58,3 +58,11 @@ load:$$\text{Total Concurrent Requests} = \text{Connections} \times \text{Pipeli
    Interrupt Moderation: Tuning the OS kernel to handle the flood of network packets without context-switching the
    CPU to death.
    Zero-Copy Networking: Reducing the number of times data is copied between the kernel and the application memory.
+
+## CASE STUDIES
+
+### KIZO (Personal App)
+
+- Argon2 is causing CPU Bottleneck. Should use env (UV_THREADPOOL_SIZE=1024).
+- Microservices to be used to decouple core business logic (Payment, Ledger), Auth and Read Heavy Modules.
+- Redis to be used for Rate limiting / User Session at application level.

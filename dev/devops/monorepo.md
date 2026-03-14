@@ -3,12 +3,14 @@
 ## 🤔 Why Monorepos?
 
 **Problems they solve:**
+
 - Dependency hell across multiple repos
 - Code duplication and inconsistent tooling
 - Complex cross-service coordination
 - Difficult integration testing
 
 **Benefits:**
+
 - Single source of truth with atomic commits
 - Shared dependencies and consistent tooling
 - Easy refactoring across entire codebase
@@ -38,6 +40,7 @@ my-monorepo/
 ## ⚙️ Tech Stack Benefits
 
 ### 🎯 Nx (Monorepo Tool)
+
 - **Smart builds**: Only rebuilds changed code
 - **Dependency graph**: Understands project relationships
 - **Parallel execution**: Runs tasks simultaneously
@@ -49,12 +52,14 @@ nx graph                       # Visualize dependencies
 ```
 
 ### 🚀 pnpm (Package Manager)
+
 - **70% less disk space**: Symlinks to global store
 - **Faster installs**: Parallel downloads with caching
 - **Strict dependencies**: Prevents phantom imports
 - **Native workspaces**: Built for monorepos
 
 ### 🐳 Docker (Runtime Management)
+
 - **Per-app isolation**: Each app gets optimal runtime
 - **Consistent environments**: Dev matches production
 - **Easy orchestration**: Start all services together
@@ -63,11 +68,11 @@ nx graph                       # Visualize dependencies
 
 ## 🔧 Version Strategy
 
-| Environment | Node | Python | Control |
-|-------------|------|--------|---------|
-| Local Dev | `.nvmrc` | `pyenv` | Dev tools |
-| Docker | `Dockerfile` | `Dockerfile` | Containers |
-| CI/CD | `Dockerfile` | `Dockerfile` | Automation |
+| Environment | Node         | Python       | Control    |
+| ----------- | ------------ | ------------ | ---------- |
+| Local Dev   | `.nvmrc`     | `pyenv`      | Dev tools  |
+| Docker      | `Dockerfile` | `Dockerfile` | Containers |
+| CI/CD       | `Dockerfile` | `Dockerfile` | Automation |
 
 ---
 
@@ -93,26 +98,29 @@ pnpm nx run-many --target=lint --all  # Lint everything
 ## 📦 Key Files
 
 **`pnpm-workspace.yaml`**
+
 ```yaml
 packages:
-  - 'apps/*'
-  - 'libs/*'
-  - 'tools/*'
+  - "apps/*"
+  - "libs/*"
+  - "tools/*"
 ```
 
 **`docker-compose.yml`**
+
 ```yaml
-version: '3.8'
+version: "3.8"
 services:
   devaman:
     build: ./apps/devAman
     ports: ["3000:3000"]
   kinzokupe:
-    build: ./apps/kinzokupe  
+    build: ./apps/kinzokupe
     ports: ["8000:8000"]
 ```
 
 **`.nvmrc`**
+
 ```
 18
 ```
@@ -122,12 +130,14 @@ services:
 ## ✅ Best Practices
 
 **Do:**
+
 - Use `nx affected:*` commands for efficiency
 - Extract shared code into libs
 - Use Docker for consistent environments
 - Version control tool versions
 
 **Don't:**
+
 - Put everything in one giant library
 - Let libs import from apps
 - Ignore the dependency graph
