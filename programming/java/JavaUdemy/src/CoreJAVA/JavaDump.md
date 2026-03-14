@@ -334,23 +334,46 @@ class B extends A {
 
 ## Collections
 
-Pre Requisite:
+### Intro
+
+- What?
+  Added in Java version 1.2
+  Group of Objects
+  Present in java.util package.
+  Framework provide us architecture to manage these "group of objects".
+
+- Why?
+  Prior to JCF, we have Array, Vector, Hash Tables.
+  But problem with that is, there is no common interface, so its difficult to remember methods for each.
+
+- Solution:
+  Hierarchy of Classes and Interface.
+
+Level O: Iterable (Root) | Map(Root)
+Level 1: Collection
+Level 2: List, Set , Queue
+Level 3: ArrayList,Vector | SortedSet | Deque
+Level 4: ArrayDeque
 
 Iterable:
-Used to TRAVERSE the collection.
+Used to TRAVERSE the collection. Added in Java 1.5
 
 - Methods:
-
 1. iterator()
+   - Java 1.5
+   - Returns the iterator object, which provides below methods to iterate collection.
+     1. hasNext(): returns true, if more elements
+     2. next(): returns next element
+     3. remove(): removes last element returned by iterator
 
-                - Returns the iterator object, which provides below methods to iterate collection.
-                    1. hasNext(): returns true, if more elements
-                    2. next(): returns next element
-                    3. remove(): removes last element returned by iterator
+2. forEach()
+    - Java 1.8
+    - Iterate collection using **Lambda** expression. Lambda expression is called for each element in
+      collection.
+    - It uses Consumer {Functional Interface} internally with Iterator
 
-            2. forEach()
-                - Iterate collection using **Lambda** expression. Lambda expression is called for each element in
-                  collection.
+Collection:
+Added in Java 1.2
 
 Comparator
 
@@ -377,6 +400,5 @@ Algorithms
 Sorting:
 For Array, String
 Collections.sort(ds_name)
-
 
 

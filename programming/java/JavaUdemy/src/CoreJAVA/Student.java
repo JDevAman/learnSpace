@@ -1,5 +1,4 @@
 package CoreJAVA;
-import OOPS.StudentRecord;
 
 //  Abstraction: Interface hides logic
 //  Inheritance: Implements interface
