@@ -1,11 +1,16 @@
 # HLD
 
-## Engineering for 1 Million Requests Per Second (RPS)
+## Basics
+
+
+## CASE STUDIES
+
+### Engineering for 1 Million Requests Per Second (RPS)
 
 For more details: https://www.youtube.com/watch?v=W4EwfEU8CGA
 This is the realm of "Systems Engineering" - managing the movement of electrons across hardware.
 
-### I. The Critical Bottlenecks
+#### I. The Critical Bottlenecks
 
 1. Hardware Constraints:
    - Compute (CPU): The bottleneck is often the overhead of context switching and interrupt handling.
@@ -28,7 +33,7 @@ This is the realm of "Systems Engineering" - managing the movement of electrons 
      - Inefficient Serialization: JSON parsing is CPU-intensive. High-performance
        systems use Protobuf or FlatBuffers.
 
-### II. Performance Measurements:
+#### II. Performance Measurements:
 
 Never assume, always measure. Use the Concurrency Formula to understand the
 load:$$\text{Total Concurrent Requests} = \text{Connections} \times \text{Pipelining}$$
@@ -38,7 +43,7 @@ load:$$\text{Total Concurrent Requests} = \text{Connections} \times \text{Pipeli
 - Latency vs. Throughput: You must measure the p99 latency (the time it takes for the slowest 1% of requests). A high
   RPS is useless if the latency is 10 seconds.
 
-### III. Architectural Solutions
+#### III. Architectural Solutions
 
 1. Redis Cluster (Memory Sharding)
    Why: A single Redis instance is single-threaded. To reach 1M RPS, you must shard data across a cluster.
@@ -58,8 +63,6 @@ load:$$\text{Total Concurrent Requests} = \text{Connections} \times \text{Pipeli
    Interrupt Moderation: Tuning the OS kernel to handle the flood of network packets without context-switching the
    CPU to death.
    Zero-Copy Networking: Reducing the number of times data is copied between the kernel and the application memory.
-
-## CASE STUDIES
 
 ### KIZO (Personal App)
 
