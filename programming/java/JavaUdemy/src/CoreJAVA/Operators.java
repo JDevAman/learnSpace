@@ -8,7 +8,5 @@ public class Operators {
         //instanceof
         Map<Integer, Integer> test = new HashMap();
         System.out.println(test instanceof HashMap<Integer, Integer>);
-
-
     }
 }

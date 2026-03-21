@@ -16,6 +16,7 @@ public class Basics {
         Basics.name = "Aman";
         System.out.println(Basics.getName());
     }
+
     static class OOPS {
         public static void main(String[] args) {
             System.out.println("Hi");

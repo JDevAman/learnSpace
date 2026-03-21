@@ -6,6 +6,7 @@ Link: [Git Doc](https://git-scm.com/docs/)
 
 ## COMMANDS
 
+- Clone Remote: git clone <remote_name>
 - New Branch: git checkout -b <branch_name>
 - Branch: git checkout <branch_name>
 - Delete Branch: git branch -d <branch_name>
