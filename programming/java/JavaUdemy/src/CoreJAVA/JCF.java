@@ -1,6 +1,10 @@
 package CoreJAVA;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class JCF {
     public static void main(String[] args) {
@@ -38,6 +42,7 @@ public class JCF {
         st.add(8);
         System.out.println("Add All " + nums.addAll(st));
         System.out.println("Contains All " + nums.containsAll(st));
+
         // Collections - Utility Class
         Collections.sort(nums);
         nums.forEach((Integer val) -> System.out.print(val + " "));
@@ -123,9 +128,9 @@ public class JCF {
         sList.addFirst(700);
 
         ListIterator<Integer> slItr = sList.listIterator();
-        while(slItr.hasNext()){
+        while (slItr.hasNext()) {
             int val = slItr.next();
-            System.out.println("Val "+ val);
+            System.out.println("Val " + val);
         }
 
         // Vector
@@ -133,15 +138,44 @@ public class JCF {
         Vector<String> vec = new Vector<>();
         vec.add("Thread");
         vec.add("Safe");
-        System.out.println("Get: " +vec.elementAt(1));
+        System.out.println("Get: " + vec.elementAt(1));
 
 
         System.out.println("Stack - Thread safe LIFO Structure");
         Stack<String> stk = new Stack<>();
         stk.add("Last");
         stk.addLast("Added");
+        // Map
+        Map<Integer, String> mpp = new HashMap<>();
+        mpp.put(9234, "Aman Kumar");
+        mpp.put(8787, "Kumari Anuradaha");
+        mpp.put(9360, "Arvind Kumar");
+
+        // Streams:
+        System.out.println("Streams");
+        List<Integer> salary = new ArrayList<>(Arrays.asList(38000, 45000, 52000));
+        long output = salary.stream().filter((Integer sal) -> sal > 40000).count();
+        System.out.println("Salary > 40,000: " + output);
+
+        double[] marks = new double[]{90.6, 93.8, 87.3};
+        long disCnt = Arrays.stream(marks).filter((double mark) -> mark >= 90.0).count();
+        System.out.println("Distinction: " + disCnt);
+
+        List<String> courses = Stream.of("Computer Science Engineering",
+                        "Information Technology",
+                        "Civil Engineering",
+                        "Mechanical Engineering")
+                        .map((String course) -> Arrays.stream(course.split(" "))
+                                                .map(word -> word.substring(0,1))
+                                                .collect(Collectors.joining())
+                                                .toUpperCase())
+                        .peek((String word) -> System.out.println(word))
+                        .collect(Collectors.toList());
+
+        IntStream grade = IntStream.iterate(0, (mark) -> mark + 10).limit(10);
+        // IntStream grade = IntStream.range(0, 9);
+        // IntStream userIds = IntStream.generate(() -> new Random().nextInt()).limit(10);
     }
 
-    // Map
-    Map<Integer, String> mpp = new HashMap<>();
 }
+

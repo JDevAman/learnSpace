@@ -449,7 +449,7 @@ Categories:
 
 - Arithmetic:
 - Relational Operator:
-- 
+-
 
 ## OOPS
 
@@ -818,4 +818,82 @@ Concurrent Collections:
 | CopyOnWriteArrayList         | Creates a fresh copy on every write              | Best for high-read/low-write         |
 | ConcurrentHashMap            | Uses CAS (Compare-And-Swap) and segment locking. | High performance for multi-threading |
 
-Streams: TBA
+Streams:
+
+Core Philosophy:
+
+* Definition: A sequence of elements supporting sequential and parallel aggregate operations.
+* The "Fuse" Rule: A Stream is not a data structure. It is a pipeline. Once a Terminal Operation is called, the stream
+  is consumed and cannot be reused.
+* Lazy Evaluation: Intermediate operations are not executed until the terminal operation is invoked. The JVM uses
+  Pipeline Fusion to process elements in a single pass where possible.
+* Works with: int, long & double
+
+Stream Life Cycle & Flow:
+Source -> Intermediate Operations (Stateful/Stateless) -> Terminal Operation
+
+A. Sources:
+
+1. Collections: list.stream() or set.stream() method
+   ``` java
+      List<Integer> salary = new ArrayList<>(Arrays.asList(38000, 45000, 52000));
+      long output = salary.stream().filter((Integer sal) -> sal > 40000).count();
+    ```
+2. Arrays: Arrays.stream(<Name>)
+    - Only for int[], long[], double[]
+   ``` java
+       double[] marks = new double[]{90.6, 93.8, 87.3};
+       long disCnt = Arrays.stream(marks).filter((double mark) -> mark >= 90.0).count();
+   ```
+3. Static: Stream.of(...values)
+4. Infinite/Generated:
+    - Stream.iterate(seed, operator)
+        - Sequential i.e. Tnext = F(Tprev)
+    - Stream.generate(supplier)
+        - Unordered/Random
+
+B. Intermediate Operations (Transformers:
+
+Stateless
+
+1. filter(predicate)
+2. map(Function)
+3. flatMap(Function)
+4. peek(Consumer)
+
+
+Stateful
+1. distinct()
+2. sorted()
+3. limit(long maxSize)
+4. skip(long n)
+
+
+NOTE: Intermediate operations are "Lazy" i.e. they will only be activated once terminal operations are called.
+
+Sequence of Stream Operations:
+Stream will try to hit max number of intermediate operations for current element until it gets blocked by any operation
+that requires all elements to be present like sorted or reverse.
+
+Different Terminal Operations:
+
+1. for-each()
+2. toArray()
+3. reduce()
+4. collect()
+5. min(comparator<T> Comparator) or max(comparator<T> Comparator)
+6. anyMatch()
+7. allMatch()
+8. noneMatch()
+9. findFirst()
+10. findAny()
+
+
+NOTE: Once Terminal operation is executed on stream, it is closed and can't be used again.
+
+Parallel Stream:
+
+- Helps to perform operation on stream concurrently, taking advantage of multi core CPU.
+- parallelStream() method is used instead of regular stream().
+    - Task Splitting: Uses `Spliterator`  to split data into multiple chunks.
+    - Task submission and Parallel Processing: Uses `Fork-Join` Pool Technique.
