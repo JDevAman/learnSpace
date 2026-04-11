@@ -183,7 +183,20 @@ public class Maths {
         return recursion(n-1) + recursion(n-2);
     }
 
+    static void primes(int n){
+        boolean[] isPrime = new boolean[n+1];
+        Arrays.fill(prime, true);
 
+        isPrime[0] = isPrime[1] = false;
+        for(int p=2; p*p<=n; p++){
+            if(isPrime[p]){
+                for(int i=p*p; i<=n; i+=p){
+                    isPrime[i] = false;
+                }
+            }
+        }
+    }
+    
     static void solve(FastReader fr, PrintWriter out) {
         int n = fr.nextInt();
         int p = fr.nextInt();
