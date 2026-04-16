@@ -861,13 +861,12 @@ Stateless
 3. flatMap(Function)
 4. peek(Consumer)
 
-
 Stateful
+
 1. distinct()
 2. sorted()
 3. limit(long maxSize)
 4. skip(long n)
-
 
 NOTE: Intermediate operations are "Lazy" i.e. they will only be activated once terminal operations are called.
 
@@ -888,7 +887,6 @@ Different Terminal Operations:
 9. findFirst()
 10. findAny()
 
-
 NOTE: Once Terminal operation is executed on stream, it is closed and can't be used again.
 
 Parallel Stream:
@@ -897,3 +895,5 @@ Parallel Stream:
 - parallelStream() method is used instead of regular stream().
     - Task Splitting: Uses `Spliterator`  to split data into multiple chunks.
     - Task submission and Parallel Processing: Uses `Fork-Join` Pool Technique.
+
+## MULTITHREADING
