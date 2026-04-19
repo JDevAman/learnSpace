@@ -418,26 +418,188 @@ New java versions: CMS & G1 GC.
     * Class from which subclass is derived - SuperClass
     * In absence of any explicit SuperClass, every class is implicitly subclass of `Object`.
 * Nested Class
+    * Class within Other Class.
+    * When to use?
+        * If class A will be only used by class B, then nested class B inside A.
+        * Helps group logically related classes in one file.
+    * Types:
+        * Static Nested Class
+            * dont have access to non-static variable & method of outer class.
+        * Non-Static Nested Class
+            * Member Inner Class
+            * Local Inner Class
+            * Anonymous Inner Class (Not Used)
+* Generic Class
+    * Write Class in generic manner that helps to avoid typecasting.
+        * Inheritance in Generic Classes
+        * Generic Method
+        * RAW Type Object
+        * Bounded Generics
+        * WildCards
+* POJO
+    * Plain Old JAVA Object
+    * Contains Variables and its getter - setter methods
+    * Public Class and default constructor.
+    * No annotation to be used and shouldn't extend any class or implement any interface.
+* ENUM
+    * Collection of CONSTANTS - Implicitly (Static & Final)
+    * Can implement Interfaces; have variables, constructor and methods
+    * Cant be instantiated or no other class can extend it.
+    * Code Snippet: Custom Values, Method Override, Abstract Method, Implement Interface
+* Final Class
+    * Cant be inherited
+* Singleton Class
+    * Objective is to create only 1 object
+    * Diff Ways of Creating:
+        * Eager Initialization
+        * Lazy Initialization
+        * Synchronized Method
+        * Double Checked Locking
+        * Bill Pugh Solution*
+        * ENUM
+* IMMUTABLE Class
+    * Cant change value of class once created.
+    * Declare class as 'final'.
+    * Class members are private, no setter, Initialization thru constructor.
+* WRAPPER Class
 
 ## Interfaces
 
-TBA
+Something which helps system to interact with each other, without knowing details of each other.
 
-## Reflections
+- Properties:
+    - All methods in Interface are public only.
+    - Methods cant be declared as final.
+    - Fields are public, static & final implicitly.
+    - Overridden methods cant have more restrictive specifier.
+    - Concrete Class must provide implementation for all methods.
+    - Abstract class are not forced to override all methods.
+    - Class can implement from multiple interfaces.
+- Types:
+    - Nested Interface:
+        - Nested Interface within Interface
+        - Nested Interface within Class
 
-TBA
+    - Functional Interface
+        - Interface contains only 1 abstract method.
+        - `@FunctionalInterface` keyword can be used at top of Interface.
+        - Ways to implement Functional interface:
+            - implements
+            - Anonymous Class
+            - Lambda Expression
+        - Type:
+            - Consumer
+            - Supplier
+            - Function
+            - Predicate
+    - JAVA 8/9 Features:
+        - Default Method:
+            - Before Java 8, Interface can have only abstract method. Now, we can have 'default' method.
+        - Static Method:
+        - Private Method (9):
+        - Private Static Method (9):
+
+## Reflections*
+
+Used to examine Classes, methods, fields, interfaces at runtime and change behavior of class too.
+
+- How to get Reflection of Classes?
+    - Get Object of `Class`.
+    - Instance of class _Class_ represents classes during runtime.
+    - JVM creates one _Class_ Object for each and every class which is loaded during runtime.
+
+- Reflection of:
+    - Class:
+        - forName(): Class birdClass = Class.forName('bird');
+        - .class: Class birdClass = Bird.class;
+        - .getClass():  Bird obj = new Bird(); Class birdClass = obj.getClass();
+    - Method:
+        - getMethods(): class eClass = Eagle.class; Methods[] methods = eClass.getMethods();
+        - Invoking Methods:
+          ````java
+             class eClass = Eagle.Class;
+             Object eagleObj = eClass.newInstance();
+             Method flyMethod = eClass.getMethod('fly',int.class, boolean.class);
+             flyMethod.invoke(eagleObj, 1, true);
+          ````
+    - Field:
+      ```java
+        class eClass = Eagle.class;
+        Field[] fields = eClass.getFields(); 
+      ```
 
 ## Annotations
 
-Kind of adding META DATA to java code.
-Usage is optional.
-Can use this metadata info at runtime and can add certain logic if wanted.
-How to read metadata information? Using **REFLECTION**
-Can be applied anywhere.
+Kind of adding METADATA to java code.
+
+- Properties:
+    - Usage is optional.
+    - Can use this metadata info at runtime and can add certain logic if wanted.
+    - How to read metadata information? Using **REFLECTION**
+    - Can be applied anywhere.
+
+- Types:
+    - Predefined Annotations:
+        - Used on Annotations (Meta Annotation)
+            * @Target
+            * @Retention
+            * @Documented
+            * @Inherited
+            * @Repeatable (8)
+        - Used on Java Code
+            * @Deprecated
+            * @Override
+            * @Suppresswarnings
+            * @FunctionalInterface
+            * @SafeVarargs
+    - Custom Annotation:
+        - Can create using `@interface` keyword.
+        - Types:
+            - Annotation with Body
+            - Annotation with Method
+            - Annotation with Default Values
 
 ## Exception Handling
 
-TBA
+- Intro:
+    - An event, that occurs during execution of program and disrupts normal flow of program.
+    - Creates an Exception Object, having:
+        * Type of Exception & Message
+        * Stack Trace
+    - Runtime system use this Exception Object and find class which can handle it.
+
+- Hierarchy:
+
+    - Object(Throwable)
+        - Error
+            - OutOfMemory
+            - StackOverFlow
+        - Exception
+            - Runtime Exception
+                - ClassCast
+                - Arithmetic
+                - IndexOuOfBounds
+                - NUllPointer
+                - IllegalArgument
+            - Compiletime Exception
+                - ClassNotFound
+                - Interrupted
+                - IOException
+                - SQLException
+
+- Handling Exceptions:
+    - Try/Catch Block:
+        - Catch Block is used to catch all exception which can be thrown in try block.
+        - Multiple Catch Block can be used.
+        - General Exception to be used at end.
+    - Try/Catch/Finally or Try/Finally:
+        - Used after try/catch block.
+        - At most 1 finally block which is mostly used for closing files, adding logs.F
+    - Throw:
+        - Used to throw new Exception or Re-throw an exception
+
+- Custom Exception Class:
+    - Extends `Exception` class
 
 ## Operators
 
