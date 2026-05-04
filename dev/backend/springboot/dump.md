@@ -127,6 +127,26 @@ Auth: Authentication
 
 ## BEAN & ITS LIFECYCLE
 
+Bean - Object in Java. It is run over Spring Container (IOC Container).
+
+Ways to create:
+
+1. @Component
+2. @Bean
+
+## SpringBoot Annotations
+
+- @Controller
+- @RestController
+- @ResponseBody
+- @RequestMapping
+- @RequestParam
+- @PathVariable
+- @RequestBody
+- @ResponseEntity
+
+## Dependency Injection
+
 ## Building App
 
 ### Maven

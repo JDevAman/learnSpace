@@ -12,9 +12,9 @@ My all-in-one java notes for quick revision file.
    Used with property or method so that it is associated with the class and not an instance.
 
 3. **final**
-    - On a variable: value (or reference) cannot be reassigned.
-    - On a method: cannot be overridden. JVM skips vTable lookup → faster dispatch.
-    - On a class: cannot be subclassed (e.g. `String`).
+   - On a variable: value (or reference) cannot be reassigned.
+   - On a method: cannot be overridden. JVM skips vTable lookup → faster dispatch.
+   - On a class: cannot be subclassed (e.g. `String`).
 
 4. **synchronized**
    Used in concurrency to ensure only one thread executes the block/method at a time. Acquires the monitor lock on the
@@ -30,6 +30,7 @@ My all-in-one java notes for quick revision file.
 
 7. **instanceof**
    Runtime type check. Returns `true` if an object is an instance of a given class or interface.
+
    ```java
    if (animal instanceof Dog dog) { dog.bark(); } // pattern matching (Java 16+)
    ```
@@ -67,7 +68,7 @@ Use `static final` to define constants.
 #### 1. Primitive Types
 
 | Type      | Size    | Range / Notes                                               |
-|-----------|---------|-------------------------------------------------------------|
+| --------- | ------- | ----------------------------------------------------------- |
 | `char`    | 2 bytes | 0 to 65535. Can use int literals like `char c = 65; // 'A'` |
 | `byte`    | 1 byte  | -128 to 127 (2's complement)                                |
 | `short`   | 2 bytes | -32,768 to 32,767                                           |
@@ -99,19 +100,19 @@ public static void modify(Employee emp) {
 #### Special Reference Types
 
 - **String**
-    - Immutable
-    - Stored in **String Constant Pool** (if literal)
-    - `new String()` creates new object on heap
-    - Use `.equals()` to compare content, `==` compares reference
+  - Immutable
+  - Stored in **String Constant Pool** (if literal)
+  - `new String()` creates new object on heap
+  - Use `.equals()` to compare content, `==` compares reference
 
 - **Interface**
-    - Cannot be instantiated
-    - Interface type can hold reference to child class object
+  - Cannot be instantiated
+  - Interface type can hold reference to child class object
 
 - **Array**
-    - Fixed-size sequence of elements
-    - Example: `int[] arr = new int[5];`
-    - 2D Array: `int[][] matrix = new int[5][4];`
+  - Fixed-size sequence of elements
+  - Example: `int[] arr = new int[5];`
+  - 2D Array: `int[][] matrix = new int[5][4];`
 
 #### Wrappers
 
@@ -135,7 +136,7 @@ public static void modify(Employee emp) {
 #### Memory Layout
 
 | Type   | Total Bits | Sign | Exponent (Bias) | Mantissa |
-|--------|------------|------|-----------------|----------|
+| ------ | ---------- | ---- | --------------- | -------- |
 | Float  | 32         | 1    | 8 (bias 127)    | 23 bits  |
 | Double | 64         | 1    | 11 (bias 1023)  | 52 bits  |
 
@@ -144,43 +145,43 @@ public static void modify(Employee emp) {
 ##### Example: Convert `4.125` to IEEE 754
 
 1. **Binary Conversion**:
-    - Integer: `4` -> `100`
-    - Fraction: `0.125` -> `001` (since 0.125 \* 2 = 0.25 \* 2 = 0.5 \* 2 = 1)
-    - Combined: `100.001`
+   - Integer: `4` -> `100`
+   - Fraction: `0.125` -> `001` (since 0.125 \* 2 = 0.25 \* 2 = 0.5 \* 2 = 1)
+   - Combined: `100.001`
 
 2. **Normalization**:
-    - Move binary point: `1.00001 x 2^2`
+   - Move binary point: `1.00001 x 2^2`
 
 3. **Exponent with Bias**:
-    - 2 + 127 = 129 -> `10000001`
+   - 2 + 127 = 129 -> `10000001`
 
 4. **Mantissa**:
-    - Drop leading 1 -> `00001`
-    - Pad to 23 bits -> `00001000000000000000000`
+   - Drop leading 1 -> `00001`
+   - Pad to 23 bits -> `00001000000000000000000`
 
 5. **Final Float Format**:
-    - Sign: `0`
-    - Exponent: `10000001`
-    - Mantissa: `00001000000000000000000`
-    - Combined: `0 10000001 00001000000000000000000`
+   - Sign: `0`
+   - Exponent: `10000001`
+   - Mantissa: `00001000000000000000000`
+   - Combined: `0 10000001 00001000000000000000000`
 
 #### IEEE 754 → Decimal
 
 ##### Example: `0 10000001 00001000000000000000000`
 
 1. **Extract Values**:
-    - Sign = 0 (positive)
-    - Exponent = 129 - 127 = 2
-    - Mantissa = 1.00001 (implicit 1)
+   - Sign = 0 (positive)
+   - Exponent = 129 - 127 = 2
+   - Mantissa = 1.00001 (implicit 1)
 
 2. **Calculate**:
-    - `1.00001 x 2^2 = 100.001 = 4.125`
+   - `1.00001 x 2^2 = 100.001 = 4.125`
 
 #### Special Cases
 
 - Exponent all 1s:
-    - Mantissa = 0 -> Infinity
-    - Mantissa != 0 -> NaN
+  - Mantissa = 0 -> Infinity
+  - Mantissa != 0 -> NaN
 
 - Exponent all 0s -> Denormals/Subnormals
 - Some decimals like 0.7 can't be exactly represented
@@ -230,7 +231,7 @@ Value = (-1)^sign x (1 + mantissa) x 2^(exponent - bias)
 ### 🔹 Variable Scopes Recap
 
 | Type                  | Scope                 | Notes                         |
-|-----------------------|-----------------------|-------------------------------|
+| --------------------- | --------------------- | ----------------------------- |
 | Local Variable        | Inside method/block   | Must be initialized           |
 | Member Variable       | Class-level, per obj  | Has default values            |
 | Static Variable       | Class-level shared    | Shared across instances       |
@@ -241,12 +242,12 @@ Value = (-1)^sign x (1 + mantissa) x 2^(exponent - bias)
 
 - Used to perform certain task.
 - Declaration:
-  public int sum  (int a, int b){}
-    - public: access specifier
-    - int: return type
-    - sum: name
-    - (int a, int b) : method arguments
-    - {}: method body
+  public int sum (int a, int b){}
+  - public: access specifier
+  - int: return type
+  - sum: name
+  - (int a, int b) : method arguments
+  - {}: method body
 
 - Access Specifiers:
   private: class only
@@ -258,24 +259,23 @@ Value = (-1)^sign x (1 + mantissa) x 2^(exponent - bias)
   Void, Primitive/Classname
 
 - Types:
-
-    * System Defined
-    * User Defined
-    * Overloaded method: More than one method with same name in class. Diffrentiated on basis of `argument`.
-    * Overridden method: Sub/child class has same method as parent.
-    * Static Method: Access with class. Cant access non-static method or properties. Cant be overridden. Used in
-      `Factory Design`.
-    * Final Method: Cannot be overridden
-    * Abstract Method: Defined only in abstract class. Only method declaration; Child class provide implementation.
-    * Variable Argument: Variable number of inputs in parameters. Atleast one argument should be present.
+  - System Defined
+  - User Defined
+  - Overloaded method: More than one method with same name in class. Diffrentiated on basis of `argument`.
+  - Overridden method: Sub/child class has same method as parent.
+  - Static Method: Access with class. Cant access non-static method or properties. Cant be overridden. Used in
+    `Factory Design`.
+  - Final Method: Cannot be overridden
+  - Abstract Method: Defined only in abstract class. Only method declaration; Child class provide implementation.
+  - Variable Argument: Variable number of inputs in parameters. Atleast one argument should be present.
 
 ## Constructor
 
 - Used to create an instance/initialise instance variable.
 - Similar to method except:
-    * Name: Same as class.
-    * Return Type: No return type
-    * Cant be static, final or abstract, synchronized
+  - Name: Same as class.
+  - Return Type: No return type
+  - Cant be static, final or abstract, synchronized
 - `new` keyword tell java to call constructor.
 
 Queries:
@@ -306,300 +306,299 @@ Constructor Chaining:
 Two types of memory:
 
 - Stack
-    * Stores temporary variables & separate memory block for methods.
-    * Store primitive data types.
-    * Store reference of heap objects.
-        * Strong Reference:
-            * It is when variable in stack is referencing an object in Heap Memory. Until reference exists, we wont be
-              able to delete object from Heap memory.
-            * Ex: `Person pObj = new Person();`
-        * Weak Reference
-            * Reference exists to object in heap but as soon as G.C. runs, object is deleted even if some variable is
-              referencing this object from stack.
-            * Ex: `WeakReference<Person> weakPObj = new WeakReference<Person>(newPerson);`
-        * Soft Reference
-            * Type of weak reference - Object will be deleted only when there is storage of space in heap. GC is allowed
-              to delete soft reference but it'll keep object if sufficient space is there in heap.
-    * Each thread has its own stack memory.
-    * Variable within SCOPE is only visible.
-    * When stack memory go full, throws "java.lang.StackOverflowError"
+  - Stores temporary variables & separate memory block for methods.
+  - Store primitive data types.
+  - Store reference of heap objects.
+    - Strong Reference:
+      - It is when variable in stack is referencing an object in Heap Memory. Until reference exists, we wont be
+        able to delete object from Heap memory.
+      - Ex: `Person pObj = new Person();`
+    - Weak Reference
+      - Reference exists to object in heap but as soon as G.C. runs, object is deleted even if some variable is
+        referencing this object from stack.
+      - Ex: `WeakReference<Person> weakPObj = new WeakReference<Person>(newPerson);`
+    - Soft Reference
+      - Type of weak reference - Object will be deleted only when there is storage of space in heap. GC is allowed
+        to delete soft reference but it'll keep object if sufficient space is there in heap.
+  - Each thread has its own stack memory.
+  - Variable within SCOPE is only visible.
+  - When stack memory go full, throws "java.lang.StackOverflowError"
 
 - Heap
-    * Store objects & no order of allocating memory
-    * Garbage Collector is used for delete unreferenced objects from heap.
-        * Mark & Sweep Algorithm
-        * Types of Garbage Collector
-            * Single GC
-            * Parallel GC
-            * G1
-            * Concurrent Mark & Sweep (CMS)
-    * Heap memory is shared with all threads
+  - Store objects & no order of allocating memory
+  - Garbage Collector is used for delete unreferenced objects from heap.
+    - Mark & Sweep Algorithm
+    - Types of Garbage Collector
+      - Single GC
+      - Parallel GC
+      - G1
+      - Concurrent Mark & Sweep (CMS)
+  - Heap memory is shared with all threads
 
 ## Garbage Collection:
 
 Heap Memory Division
 
-* Young Generation
-    * EDEN
-    * S0
-    * S1
-* Old Generation
-* MetaSpace (Non Heap) [Prem Gen]
-    * Contains:
-        * Class Variable
-        * Class Metadata (Stores info about class from which objects can be created)
-        * Constants
+- Young Generation
+  - EDEN
+  - S0
+  - S1
+- Old Generation
+- MetaSpace (Non Heap) [Prem Gen]
+  - Contains:
+    - Class Variable
+    - Class Metadata (Stores info about class from which objects can be created)
+    - Constants
 
 Example:
 THRESHOLD AGE = 3
 
 1. Object Creation: (o1->o5)
-    * (o1,...o5) are created and moved to EDEN Stage.
-    * no reference for o2 & o5.
-    * GC Uses Mark & Sweep Algorithm:
-        * Marks object with no more references.
-        * Sweep:
-            * De-referenced are garbage collected and remaining survivor objects to alternate(S0/S1) and add age.
-    * Minor GC: GC has run once.Happens periodically and very fast.
+   - (o1,...o5) are created and moved to EDEN Stage.
+   - no reference for o2 & o5.
+   - GC Uses Mark & Sweep Algorithm:
+     - Marks object with no more references.
+     - Sweep:
+       - De-referenced are garbage collected and remaining survivor objects to alternate(S0/S1) and add age.
+   - Minor GC: GC has run once.Happens periodically and very fast.
 2. Objects Creation: (o6, o7)
-    * o6 & o7 are created and move to EDEN.
-    * No reference for o4 & o7.
-    * o4 & o7 are deleted.
+   - o6 & o7 are created and move to EDEN.
+   - No reference for o4 & o7.
+   - o4 & o7 are deleted.
 3. Objects Creation: (o8, o9)
-    * Objects with age >= 3 are moved to Old Generation.
+   - Objects with age >= 3 are moved to Old Generation.
 
-* Major GC: GC in old generation wont run frequently, and objects are too big and references pointed to them and used
+- Major GC: GC in old generation wont run frequently, and objects are too big and references pointed to them and used
   frequently.
 
-! Prior to Java *: Fixed Space aka perma gen which used to store data currently stored in metaspace. It was non
+! Prior to Java \*: Fixed Space aka perma gen which used to store data currently stored in metaspace. It was non
 expandable, and gave out of memory error. Metaspace is expandable & different from Heap.
 
 GC Algorithms:
 
-* Mark & Sweep Algorithm
-* Mark & Sweep Algorithm with compact memory
+- Mark & Sweep Algorithm
+- Mark & Sweep Algorithm with compact memory
   GC runs once, remaining object are put in sequential memory block leaving another sequential block free to put objects
   together.
 
 Versions of GC:
 
-* Serial GC
-    * Only one GC thread is working for both minor and major GC.
-    * Cons: GC will be slower & expensive due to single thread. Once GC works, appl thread pauses
-* Parallel GC
-    * Parallel threads running based on CPU configuration.
-    * GC works faster, application thread will be in pause state for lesser time.
-* Concurrent Mark & Sweep
-    * GC will try to run concurrently with application threads, but there is no guarantee. No memory compaction happens.
-* G1 Garbage Collection
-    * Better version of concurrent mark & sweep in which GC will try not to stop/pause application thread and supports
-      memory compaction as well.
+- Serial GC
+  - Only one GC thread is working for both minor and major GC.
+  - Cons: GC will be slower & expensive due to single thread. Once GC works, appl thread pauses
+- Parallel GC
+  - Parallel threads running based on CPU configuration.
+  - GC works faster, application thread will be in pause state for lesser time.
+- Concurrent Mark & Sweep
+  - GC will try to run concurrently with application threads, but there is no guarantee. No memory compaction happens.
+- G1 Garbage Collection
+  - Better version of concurrent mark & sweep in which GC will try not to stop/pause application thread and supports
+    memory compaction as well.
 
 Java 8: Parallel GC.
 New java versions: CMS & G1 GC.
 
 ## Classes
 
-* Concrete Class
-    * Class that can create an instance using new `NEW` keyword.
-    * All methods in this class have implementation.
-    * Can be child from interface or extend abstract class.
-    * Class Access Modifier: public, package-private
-* Abstract Class
-    * Show only important features to users & hide its internal implementation.
-    * 2 ways to achieve Abstraction:
-        * Abstract Class:
-            * Can have both abstract & non-abstract methods.
-            * Cant create an instance of this class.
-            * Constructor can be created inside them. Super key can be used to parent constructor.
-* Sub Class
-    * Class that is derived from another class - SubClass
-* Super Class
-    * Class from which subclass is derived - SuperClass
-    * In absence of any explicit SuperClass, every class is implicitly subclass of `Object`.
-* Nested Class
-    * Class within Other Class.
-    * When to use?
-        * If class A will be only used by class B, then nested class B inside A.
-        * Helps group logically related classes in one file.
-    * Types:
-        * Static Nested Class
-            * dont have access to non-static variable & method of outer class.
-        * Non-Static Nested Class
-            * Member Inner Class
-            * Local Inner Class
-            * Anonymous Inner Class (Not Used)
-* Generic Class
-    * Write Class in generic manner that helps to avoid typecasting.
-        * Inheritance in Generic Classes
-        * Generic Method
-        * RAW Type Object
-        * Bounded Generics
-        * WildCards
-* POJO
-    * Plain Old JAVA Object
-    * Contains Variables and its getter - setter methods
-    * Public Class and default constructor.
-    * No annotation to be used and shouldn't extend any class or implement any interface.
-* ENUM
-    * Collection of CONSTANTS - Implicitly (Static & Final)
-    * Can implement Interfaces; have variables, constructor and methods
-    * Cant be instantiated or no other class can extend it.
-    * Code Snippet: Custom Values, Method Override, Abstract Method, Implement Interface
-* Final Class
-    * Cant be inherited
-* Singleton Class
-    * Objective is to create only 1 object
-    * Diff Ways of Creating:
-        * Eager Initialization
-        * Lazy Initialization
-        * Synchronized Method
-        * Double Checked Locking
-        * Bill Pugh Solution*
-        * ENUM
-* IMMUTABLE Class
-    * Cant change value of class once created.
-    * Declare class as 'final'.
-    * Class members are private, no setter, Initialization thru constructor.
-* WRAPPER Class
+- Concrete Class
+  - Class that can create an instance using new `NEW` keyword.
+  - All methods in this class have implementation.
+  - Can be child from interface or extend abstract class.
+  - Class Access Modifier: public, package-private
+- Abstract Class
+  - Show only important features to users & hide its internal implementation.
+  - 2 ways to achieve Abstraction:
+    - Abstract Class:
+      - Can have both abstract & non-abstract methods.
+      - Cant create an instance of this class.
+      - Constructor can be created inside them. Super key can be used to parent constructor.
+- Sub Class
+  - Class that is derived from another class - SubClass
+- Super Class
+  - Class from which subclass is derived - SuperClass
+  - In absence of any explicit SuperClass, every class is implicitly subclass of `Object`.
+- Nested Class
+  - Class within Other Class.
+  - When to use?
+    - If class A will be only used by class B, then nested class B inside A.
+    - Helps group logically related classes in one file.
+  - Types:
+    - Static Nested Class
+      - dont have access to non-static variable & method of outer class.
+    - Non-Static Nested Class
+      - Member Inner Class
+      - Local Inner Class
+      - Anonymous Inner Class (Not Used)
+- Generic Class
+  - Write Class in generic manner that helps to avoid typecasting.
+    - Inheritance in Generic Classes
+    - Generic Method
+    - RAW Type Object
+    - Bounded Generics
+    - WildCards
+- POJO
+  - Plain Old JAVA Object
+  - Contains Variables and its getter - setter methods
+  - Public Class and default constructor.
+  - No annotation to be used and shouldn't extend any class or implement any interface.
+- ENUM
+  - Collection of CONSTANTS - Implicitly (Static & Final)
+  - Can implement Interfaces; have variables, constructor and methods
+  - Cant be instantiated or no other class can extend it.
+  - Code Snippet: Custom Values, Method Override, Abstract Method, Implement Interface
+- Final Class
+  - Cant be inherited
+- Singleton Class
+  - Objective is to create only 1 object
+  - Diff Ways of Creating:
+    - Eager Initialization
+    - Lazy Initialization
+    - Synchronized Method
+    - Double Checked Locking
+    - Bill Pugh Solution\*
+    - ENUM
+- IMMUTABLE Class
+  - Cant change value of class once created.
+  - Declare class as 'final'.
+  - Class members are private, no setter, Initialization thru constructor.
+- WRAPPER Class
 
 ## Interfaces
 
 Something which helps system to interact with each other, without knowing details of each other.
 
 - Properties:
-    - All methods in Interface are public only.
-    - Methods cant be declared as final.
-    - Fields are public, static & final implicitly.
-    - Overridden methods cant have more restrictive specifier.
-    - Concrete Class must provide implementation for all methods.
-    - Abstract class are not forced to override all methods.
-    - Class can implement from multiple interfaces.
+  - All methods in Interface are public only.
+  - Methods cant be declared as final.
+  - Fields are public, static & final implicitly.
+  - Overridden methods cant have more restrictive specifier.
+  - Concrete Class must provide implementation for all methods.
+  - Abstract class are not forced to override all methods.
+  - Class can implement from multiple interfaces.
 - Types:
-    - Nested Interface:
-        - Nested Interface within Interface
-        - Nested Interface within Class
+  - Nested Interface:
+    - Nested Interface within Interface
+    - Nested Interface within Class
 
-    - Functional Interface
-        - Interface contains only 1 abstract method.
-        - `@FunctionalInterface` keyword can be used at top of Interface.
-        - Ways to implement Functional interface:
-            - implements
-            - Anonymous Class
-            - Lambda Expression
-        - Type:
-            - Consumer
-            - Supplier
-            - Function
-            - Predicate
-    - JAVA 8/9 Features:
-        - Default Method:
-            - Before Java 8, Interface can have only abstract method. Now, we can have 'default' method.
-        - Static Method:
-        - Private Method (9):
-        - Private Static Method (9):
+  - Functional Interface
+    - Interface contains only 1 abstract method.
+    - `@FunctionalInterface` keyword can be used at top of Interface.
+    - Ways to implement Functional interface:
+      - implements
+      - Anonymous Class
+      - Lambda Expression
+    - Type:
+      - Consumer
+      - Supplier
+      - Function
+      - Predicate
+  - JAVA 8/9 Features:
+    - Default Method:
+      - Before Java 8, Interface can have only abstract method. Now, we can have 'default' method.
+    - Static Method:
+    - Private Method (9):
+    - Private Static Method (9):
 
-## Reflections*
+## Reflections\*
 
 Used to examine Classes, methods, fields, interfaces at runtime and change behavior of class too.
 
 - How to get Reflection of Classes?
-    - Get Object of `Class`.
-    - Instance of class _Class_ represents classes during runtime.
-    - JVM creates one _Class_ Object for each and every class which is loaded during runtime.
+  - Get Object of `Class`.
+  - Instance of class _Class_ represents classes during runtime.
+  - JVM creates one _Class_ Object for each and every class which is loaded during runtime.
 
 - Reflection of:
-    - Class:
-        - forName(): Class birdClass = Class.forName('bird');
-        - .class: Class birdClass = Bird.class;
-        - .getClass():  Bird obj = new Bird(); Class birdClass = obj.getClass();
-    - Method:
-        - getMethods(): class eClass = Eagle.class; Methods[] methods = eClass.getMethods();
-        - Invoking Methods:
-          ````java
-             class eClass = Eagle.Class;
-             Object eagleObj = eClass.newInstance();
-             Method flyMethod = eClass.getMethod('fly',int.class, boolean.class);
-             flyMethod.invoke(eagleObj, 1, true);
-          ````
-    - Field:
+  - Class:
+    - forName(): Class birdClass = Class.forName('bird');
+    - .class: Class birdClass = Bird.class;
+    - .getClass(): Bird obj = new Bird(); Class birdClass = obj.getClass();
+  - Method:
+    - getMethods(): class eClass = Eagle.class; Methods[] methods = eClass.getMethods();
+    - Invoking Methods:
       ```java
-        class eClass = Eagle.class;
-        Field[] fields = eClass.getFields(); 
+         class eClass = Eagle.Class;
+         Object eagleObj = eClass.newInstance();
+         Method flyMethod = eClass.getMethod('fly',int.class, boolean.class);
+         flyMethod.invoke(eagleObj, 1, true);
       ```
+  - Field:
+    ```java
+      class eClass = Eagle.class;
+      Field[] fields = eClass.getFields();
+    ```
 
 ## Annotations
 
 Kind of adding METADATA to java code.
 
 - Properties:
-    - Usage is optional.
-    - Can use this metadata info at runtime and can add certain logic if wanted.
-    - How to read metadata information? Using **REFLECTION**
-    - Can be applied anywhere.
+  - Usage is optional.
+  - Can use this metadata info at runtime and can add certain logic if wanted.
+  - How to read metadata information? Using **REFLECTION**
+  - Can be applied anywhere.
 
 - Types:
-    - Predefined Annotations:
-        - Used on Annotations (Meta Annotation)
-            * @Target
-            * @Retention
-            * @Documented
-            * @Inherited
-            * @Repeatable (8)
-        - Used on Java Code
-            * @Deprecated
-            * @Override
-            * @Suppresswarnings
-            * @FunctionalInterface
-            * @SafeVarargs
-    - Custom Annotation:
-        - Can create using `@interface` keyword.
-        - Types:
-            - Annotation with Body
-            - Annotation with Method
-            - Annotation with Default Values
+  - Predefined Annotations:
+    - Used on Annotations (Meta Annotation)
+      - @Target
+      - @Retention
+      - @Documented
+      - @Inherited
+      - @Repeatable (8)
+    - Used on Java Code
+      - @Deprecated
+      - @Override
+      - @Suppresswarnings
+      - @FunctionalInterface
+      - @SafeVarargs
+  - Custom Annotation:
+    - Can create using `@interface` keyword.
+    - Types:
+      - Annotation with Body
+      - Annotation with Method
+      - Annotation with Default Values
 
 ## Exception Handling
 
 - Intro:
-    - An event, that occurs during execution of program and disrupts normal flow of program.
-    - Creates an Exception Object, having:
-        * Type of Exception & Message
-        * Stack Trace
-    - Runtime system use this Exception Object and find class which can handle it.
+  - An event, that occurs during execution of program and disrupts normal flow of program.
+  - Creates an Exception Object, having:
+    - Type of Exception & Message
+    - Stack Trace
+  - Runtime system use this Exception Object and find class which can handle it.
 
 - Hierarchy:
-
-    - Object(Throwable)
-        - Error
-            - OutOfMemory
-            - StackOverFlow
-        - Exception
-            - Runtime Exception
-                - ClassCast
-                - Arithmetic
-                - IndexOuOfBounds
-                - NUllPointer
-                - IllegalArgument
-            - Compiletime Exception
-                - ClassNotFound
-                - Interrupted
-                - IOException
-                - SQLException
+  - Object(Throwable)
+    - Error
+      - OutOfMemory
+      - StackOverFlow
+    - Exception
+      - Runtime Exception
+        - ClassCast
+        - Arithmetic
+        - IndexOuOfBounds
+        - NUllPointer
+        - IllegalArgument
+      - Compiletime Exception
+        - ClassNotFound
+        - Interrupted
+        - IOException
+        - SQLException
 
 - Handling Exceptions:
-    - Try/Catch Block:
-        - Catch Block is used to catch all exception which can be thrown in try block.
-        - Multiple Catch Block can be used.
-        - General Exception to be used at end.
-    - Try/Catch/Finally or Try/Finally:
-        - Used after try/catch block.
-        - At most 1 finally block which is mostly used for closing files, adding logs.F
-    - Throw:
-        - Used to throw new Exception or Re-throw an exception
+  - Try/Catch Block:
+    - Catch Block is used to catch all exception which can be thrown in try block.
+    - Multiple Catch Block can be used.
+    - General Exception to be used at end.
+  - Try/Catch/Finally or Try/Finally:
+    - Used after try/catch block.
+    - At most 1 finally block which is mostly used for closing files, adding logs.F
+  - Throw:
+    - Used to throw new Exception or Re-throw an exception
 
 - Custom Exception Class:
-    - Extends `Exception` class
+  - Extends `Exception` class
 
 ## Operators
 
@@ -661,7 +660,7 @@ Inheritance:
 
 - Capability to inerit data and methods from parents.
 - "Is-a" instance or relation.
-    - Example: Human is mammal. (Human has all features of mammal)
+  - Example: Human is mammal. (Human has all features of mammal)
 - Single: class B extends A
 - Multilevel: class C extends B, class B extends A
 - Hierarchical: class B extends A, class C extends A
@@ -682,8 +681,8 @@ Polymorphism:
 - Same method, different behavior
 - Static/Compile time polymorphism/Method overloading - Parameter different.
 - Dynamic/Run time polymorphism/Method Overriding - same parameter
-    - Resolved at runtime by using `vTable` (Virtual Method Table). This is why `final` methods are faster as JVM does
-      not look them up in vTable.
+  - Resolved at runtime by using `vTable` (Virtual Method Table). This is why `final` methods are faster as JVM does
+    not look them up in vTable.
 
 ```Java
 public class Human {
@@ -725,18 +724,18 @@ A common interview "trap":
 ### EXTRA
 
 - Association (Weakest)
-    - Technique of creating relationships between classes.
-    - Peer-To-Peer. Temporary interaction
-    - Ex: Customer "uses a" bank.
+  - Technique of creating relationships between classes.
+  - Peer-To-Peer. Temporary interaction
+  - Ex: Customer "uses a" bank.
 
 - Aggregation (Weak)
-    - Weak form of association, where contained class can exist independently of containing class.
-    - Containing class is said to have "has a" relationship with contained class.
-    - Pros: High Reusability. If the `User` object is garbage collected, `Address` object stays in memory (assuming
-      reference exists).
-    - Cons: The `User` doesn't "own" address. If address is mutated externally, `User`'s state changes.
-    - Example: User "has a" address. You want address it to be loosely coupled and reuse same address across family
-      member.
+  - Weak form of association, where contained class can exist independently of containing class.
+  - Containing class is said to have "has a" relationship with contained class.
+  - Pros: High Reusability. If the `User` object is garbage collected, `Address` object stays in memory (assuming
+    reference exists).
+  - Cons: The `User` doesn't "own" address. If address is mutated externally, `User`'s state changes.
+  - Example: User "has a" address. You want address it to be loosely coupled and reuse same address across family
+    member.
 
 ```java
     public class User {
@@ -768,10 +767,10 @@ public class Address {
 ```
 
 - Composition (Strong)
-    - Stronger form of association, where one class contains a reference to another class, and the contained class
-      cannot exist independently of the containing class.
-    - The containing class is said to have a "part-of" relationship with the contained class.
-    - Ex: Eye "part of" human. You want eye to be garbage collected when human is released.
+  - Stronger form of association, where one class contains a reference to another class, and the contained class
+    cannot exist independently of the containing class.
+  - The containing class is said to have a "part-of" relationship with the contained class.
+  - Ex: Eye "part of" human. You want eye to be garbage collected when human is released.
 
 ```java
     public class Human {
@@ -800,10 +799,10 @@ public class Eye {
 ```
 
 - Inheritance (Strongest)
-    - Inheritance establishes an "is-a" relationship between the base class and the derived class.
-    - Creates tightest possible coupling. Composition favored over Inheritance.
-    - Only Inheritance when special version of parent.
-    - Example: Human "is a" Mammal. Human inherits mammal.
+  - Inheritance establishes an "is-a" relationship between the base class and the derived class.
+  - Creates tightest possible coupling. Composition favored over Inheritance.
+  - Only Inheritance when special version of parent.
+  - Example: Human "is a" Mammal. Human inherits mammal.
 
 ## Collections
 
@@ -861,52 +860,49 @@ Map (separate root — does NOT extend Collection or Iterable)
    Interface. Used to TRAVERSE the collection. Added in Java 1.5
 
 - Methods:
-    1. iterator()
-        - Java 1.5
-        - Returns the iterator object, which provides below methods to iterate collection.
-            1. hasNext(): returns true, if more elements
-            2. next(): returns next element
-            3. remove(): removes last element returned by iterator
-        - Fail Fast Check using modCount and expectedCount for modification.
+  1. iterator()
+     - Java 1.5
+     - Returns the iterator object, which provides below methods to iterate collection.
+       1. hasNext(): returns true, if more elements
+       2. next(): returns next element
+       3. remove(): removes last element returned by iterator
+     - Fail Fast Check using modCount and expectedCount for modification.
 
-    2. forEach()
-        - Java 1.8
-        - Iterate collection using **Lambda** expression. Lambda expression is called for each element in
-          collection.
-        - It uses Consumer {Functional Interface} internally with Iterator
+  2. forEach()
+     - Java 1.8
+     - Iterate collection using **Lambda** expression. Lambda expression is called for each element in
+       collection.
+     - It uses Consumer {Functional Interface} internally with Iterator
 
 2. Collection:
    Interface. Added in Java 1.2
 
 3. Queue
    Interface.
+   - PriorityQueue
+     Class. Elements ordered by natural ordering or a provided `Comparator`. Head is the smallest element.
+     - Comparator
+       Interface. External ordering. `compare(a, b)` returns negative/zero/positive.
+     - Comparable
+       Interface. Natural ordering. Class implements `compareTo(other)`.
 
-    - PriorityQueue
-      Class. Elements ordered by natural ordering or a provided `Comparator`. Head is the smallest element.
-
-        - Comparator
-          Interface. External ordering. `compare(a, b)` returns negative/zero/positive.
-        - Comparable
-          Interface. Natural ordering. Class implements `compareTo(other)`.
-
-    - Deque
-      Interface. Double-ended queue — supports insertion/removal at both ends.
-        - ArrayDeque
-          Resizable array. Faster than `Stack` for stack operations; faster than `LinkedList` for queue operations.
+   - Deque
+     Interface. Double-ended queue — supports insertion/removal at both ends.
+     - ArrayDeque
+       Resizable array. Faster than `Stack` for stack operations; faster than `LinkedList` for queue operations.
 
 4. List
    Interface. Ordered, allows duplicates, index-based access.
-
-    - ArrayList
-      Concrete Class. Backed by a dynamic array. O(1) random access, O(n) insert/delete in middle. Default capacity 10,
-      grows by 50% on resize.
-    - LinkedList
-      Concrete Class. Doubly-linked list. Also implements `Deque`. O(1) insert/delete at ends, O(n) random access.
-    - Vector
-      Concrete Class. Like ArrayList but synchronized. Legacy — prefer `ArrayList` + external sync or
-      `CopyOnWriteArrayList`.
-        - Stack
-          Concrete Class. Extends Vector. Legacy — prefer `ArrayDeque` as a stack.
+   - ArrayList
+     Concrete Class. Backed by a dynamic array. O(1) random access, O(n) insert/delete in middle. Default capacity 10,
+     grows by 50% on resize.
+   - LinkedList
+     Concrete Class. Doubly-linked list. Also implements `Deque`. O(1) insert/delete at ends, O(n) random access.
+   - Vector
+     Concrete Class. Like ArrayList but synchronized. Legacy — prefer `ArrayList` + external sync or
+     `CopyOnWriteArrayList`.
+     - Stack
+       Concrete Class. Extends Vector. Legacy — prefer `ArrayDeque` as a stack.
 
 5. Map
    Interface.
@@ -935,47 +931,43 @@ Map (separate root — does NOT extend Collection or Iterable)
    **Rehashing:**
    All entries are re-inserted into a new backing array of double capacity. O(n) operation. Why it matters for
    performance: if you know the expected size, pass it to the constructor to avoid multiple rehashes.
+   - HashMap
+     Concrete Class. Not synchronized. Allows one null key and multiple null values. O(1) average get/put.
+     - Hashtable
+       Legacy synchronized version of HashMap. Does not allow null keys or values. Prefer `ConcurrentHashMap`.
 
-    - HashMap
-      Concrete Class. Not synchronized. Allows one null key and multiple null values. O(1) average get/put.
+     - LinkedHashMap
+       Extends HashMap. Maintains insertion order (or access order if constructed with `accessOrder=true`) by
+       maintaining a doubly-linked list through entries (adds `before` and `after` pointers to each node).
 
-        - Hashtable
-          Legacy synchronized version of HashMap. Does not allow null keys or values. Prefer `ConcurrentHashMap`.
+   - SortedMap
+     Interface. Keys sorted by natural ordering or a `Comparator`. Provides `firstKey()`, `lastKey()`, `headMap()`,
+     `tailMap()`.
 
-        - LinkedHashMap
-          Extends HashMap. Maintains insertion order (or access order if constructed with `accessOrder=true`) by
-          maintaining a doubly-linked list through entries (adds `before` and `after` pointers to each node).
-
-    - SortedMap
-      Interface. Keys sorted by natural ordering or a `Comparator`. Provides `firstKey()`, `lastKey()`, `headMap()`,
-      `tailMap()`.
-
-    - NavigableMap
-      Interface. Extends SortedMap. Adds navigation methods: `floorKey()`, `ceilingKey()`, `lowerKey()`, `higherKey()`,
-      `descendingMap()`.
-
-        - TreeMap
-          Concrete Class. Implements NavigableMap using a Red-Black Tree. O(log n) get/put. Does not allow null keys (
-          null values are fine).
+   - NavigableMap
+     Interface. Extends SortedMap. Adds navigation methods: `floorKey()`, `ceilingKey()`, `lowerKey()`, `higherKey()`,
+     `descendingMap()`.
+     - TreeMap
+       Concrete Class. Implements NavigableMap using a Red-Black Tree. O(log n) get/put. Does not allow null keys (
+       null values are fine).
 
 6. Set:
    Interface. No duplicates.
-
-    - HashSet
-      Backed internally by a `HashMap` (elements are keys, value is a dummy constant).
-    - LinkedHashSet
-      Backed by `LinkedHashMap`. Maintains insertion order.
-    - SortedSet
-      Interface. Sorted order.
-        - NavigableSet
-          Interface. Adds navigation methods similar to NavigableMap.
-            - TreeSet
-              Backed by `TreeMap`. O(log n) operations.
+   - HashSet
+     Backed internally by a `HashMap` (elements are keys, value is a dummy constant).
+   - LinkedHashSet
+     Backed by `LinkedHashMap`. Maintains insertion order.
+   - SortedSet
+     Interface. Sorted order.
+     - NavigableSet
+       Interface. Adds navigation methods similar to NavigableMap.
+       - TreeSet
+         Backed by `TreeMap`. O(log n) operations.
 
 Concurrent Collections:
 
 | Collection                   | Strategy                                         | Performance                          |
-|------------------------------|--------------------------------------------------|--------------------------------------|
+| ---------------------------- | ------------------------------------------------ | ------------------------------------ |
 | Collections.synchronizedList | Global lock on every method.                     | Poor (high contention)               |
 | CopyOnWriteArrayList         | Creates a fresh copy on every write              | Best for high-read/low-write         |
 | ConcurrentHashMap            | Uses CAS (Compare-And-Swap) and segment locking. | High performance for multi-threading |
@@ -984,12 +976,12 @@ Streams:
 
 Core Philosophy:
 
-* Definition: A sequence of elements supporting sequential and parallel aggregate operations.
-* The "Fuse" Rule: A Stream is not a data structure. It is a pipeline. Once a Terminal Operation is called, the stream
+- Definition: A sequence of elements supporting sequential and parallel aggregate operations.
+- The "Fuse" Rule: A Stream is not a data structure. It is a pipeline. Once a Terminal Operation is called, the stream
   is consumed and cannot be reused.
-* Lazy Evaluation: Intermediate operations are not executed until the terminal operation is invoked. The JVM uses
+- Lazy Evaluation: Intermediate operations are not executed until the terminal operation is invoked. The JVM uses
   Pipeline Fusion to process elements in a single pass where possible.
-* Works with: int, long & double
+- Works with: int, long & double
 
 Stream Life Cycle & Flow:
 Source -> Intermediate Operations (Stateful/Stateless) -> Terminal Operation
@@ -997,22 +989,22 @@ Source -> Intermediate Operations (Stateful/Stateless) -> Terminal Operation
 A. Sources:
 
 1. Collections: list.stream() or set.stream() method
-   ``` java
+   ```java
       List<Integer> salary = new ArrayList<>(Arrays.asList(38000, 45000, 52000));
       long output = salary.stream().filter((Integer sal) -> sal > 40000).count();
-    ```
+   ```
 2. Arrays: Arrays.stream(<Name>)
-    - Only for int[], long[], double[]
-   ``` java
+   - Only for int[], long[], double[]
+   ```java
        double[] marks = new double[]{90.6, 93.8, 87.3};
        long disCnt = Arrays.stream(marks).filter((double mark) -> mark >= 90.0).count();
    ```
 3. Static: Stream.of(...values)
 4. Infinite/Generated:
-    - Stream.iterate(seed, operator)
-        - Sequential i.e. Tnext = F(Tprev)
-    - Stream.generate(supplier)
-        - Unordered/Random
+   - Stream.iterate(seed, operator)
+     - Sequential i.e. Tnext = F(Tprev)
+   - Stream.generate(supplier)
+     - Unordered/Random
 
 B. Intermediate Operations (Transformers:
 
@@ -1055,7 +1047,68 @@ Parallel Stream:
 
 - Helps to perform operation on stream concurrently, taking advantage of multi core CPU.
 - parallelStream() method is used instead of regular stream().
-    - Task Splitting: Uses `Spliterator`  to split data into multiple chunks.
-    - Task submission and Parallel Processing: Uses `Fork-Join` Pool Technique.
+  - Task Splitting: Uses `Spliterator` to split data into multiple chunks.
+  - Task submission and Parallel Processing: Uses `Fork-Join` Pool Technique.
 
 ## MULTITHREADING
+
+## I/O
+
+### 1. Core Duality
+
+| Category          | Base Class (In) | Base Class (Out) | Purpose                                                     |
+| ----------------- | --------------- | ---------------- | ----------------------------------------------------------- |
+| Byte Streams      | InputStream     | OutputStream     | "Reading/Writing raw 8-bit bytes (Images, Videos, Binary)." |
+| Character Streams | Reader          | Writer           | Reading/Writing 16-bit Unicode characters (Text files).     |
+
+### 2. Bridge:
+
+Often, your source is a stream of bytes (like a Network Socket), but you want to read it as text.
+
+- InputStreamReader: The bridge from Byte $\rightarrow$ Char. It reads bytes and decodes them into characters using a specified charset.
+- OutputStreamWriter: The bridge from Char $\rightarrow$ Byte. It encodes characters into bytes for storage/transmission.
+
+### 3. Jargons:
+
+- Byte Output (The Destinations)
+  - OutputStream: The abstract root.
+  - FileOutputStream: Direct write to disk.
+  - BufferedOutputStream: Wraps another stream to minimize I/O overhead by writing in chunks.
+  - PrintStream: (Byte Stream). Adds methods like print() and println(). Note: System.out is a PrintStream. It uses the platform's default encoding, which can be risky for internationalization.
+
+- Character Output (The Writer)
+  - BufferedWriter: Buffers character output for performance.
+  - PrintWriter: (Character Stream). The preferred way to write formatted text. It supports explicit character encoding and is more robust for cross-platform text files than PrintStream.
+
+### 4. Processing Strategies
+
+Input
+
+- Strategy A: Scanner (High Level)
+  - Source: new Scanner(System.in)
+  - Pros: Easy to use; handles tokens, regex, and primitives (nextInt, nextLine).
+  - Cons: Slow. It uses a small buffer and constant regex checking. Not suitable for reading $10^6$ lines.
+- Strategy B: BufferedReader + StringTokenizer (The Pro Way)
+  - Source: new BufferedReader(new InputStreamReader(System.in))
+  - Pros: Extremely fast. BufferedReader uses a large buffer (8KB), and StringTokenizer splits strings into tokens much faster than String.split().
+  - Cons: More boilerplate code.
+
+Output:
+
+- Strategy A: System.out.println
+  - Cons: Every call is a synchronized, unbuffered system call. High overhead.
+- Strategy B: PrintWriter + BufferedWriter
+  - Pros: Aggregates text into a buffer and writes once. Must call .flush() at the end to empty the buffer.
+
+### 5. I/O Workflow:
+
+Java I/O uses the `Decorator Design Pattern`. You "wrap" a basic stream with specialized functionality.
+
+- Input Chain:
+  File $\rightarrow$ FileInputStream (Raw Bytes) $\rightarrow$ InputStreamReader (Decode to Char) $\rightarrow$ BufferedReader (Buffer for Performance) $\rightarrow$ StringTokenizer (Parsing).
+- Output Chain:
+  Data $\rightarrow$ PrintWriter (Formatting) $\rightarrow$ BufferedWriter (Buffer) $\rightarrow$ OutputStreamWriter (Encode to Bytes) $\rightarrow$ FileOutputStream $\rightarrow$ File.
+
+### 6. Resource Safety: Try-With-Resources (TWR)
+
+Never close streams manually in a finally block if you can avoid it. Use Try-catch block.

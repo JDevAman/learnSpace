@@ -1,6 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+// Logic:
+// Initialize all as primes, if primes then mark its multiple as not prime.
 vector<int> sieve(int maxN)
 {
     vector<bool> isPrime(maxN + 1, true);

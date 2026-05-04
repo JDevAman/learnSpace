@@ -1,12 +1,20 @@
 # LLD
 
-## INTRO
-
 Resources:
 
 - `CodeWithAryan`
 - Gaurav Sen
 - DDIA
+
+## Introduction to LLD
+
+### 1. LLD
+
+- LLD Is detailed phase in softwware development that focuses on designing individual components outlined in `HLD`.
+  Defines hwo modules, classes, functions and data strctures interact with each other to achieve functionality.
+- Example: Movie Ticket Booking System
+  - LLD would detail how components like seat selection, payment processing, and ticket generation are implemented and interact with one another.
+  - Class Diagram: ![Class Diagram](image.png)
 
 ## Object Oriented Programming
 
