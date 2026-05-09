@@ -1,0 +1,78 @@
+import java.io.*;
+import java.util.*;
+
+public class P13  {
+    static class FastReader {
+        BufferedReader br;
+        StringTokenizer st;
+
+        public FastReader() {
+            br = new BufferedReader(new InputStreamReader(System.in));
+        }
+
+        String next() {
+            while (st == null || !st.hasMoreElements()) {
+                try { st = new StringTokenizer(br.readLine()); }
+                catch (IOException e) { e.printStackTrace(); }
+            }
+            return st.nextToken();
+        }
+
+        int nextInt() { return Integer.parseInt(next()); }
+        long nextLong() { return Long.parseLong(next()); }
+        double nextDouble() { return Double.parseDouble(next()); }
+    }
+
+    public static void main(String[] args) {
+        // Checking if online_judge
+        if (System.getProperty("ONLINE_JUDGE") == null) {
+            try {
+                System.setIn(new FileInputStream("inputf.in"));
+                System.setOut(new PrintStream(new FileOutputStream("outputf.out")));
+            } catch (Exception e) {
+                // Files not found? No problem, it will use standard I/O
+            }
+        }
+
+        FastReader fr = new FastReader();
+        PrintWriter out = new PrintWriter(System.out);
+
+        // Handle t test cases.
+        int t = fr.nextInt();
+        while (t-- > 0) {
+            solve(fr, out);
+        }
+
+        out.flush();
+        out.close();
+    }
+
+    static void solve(FastReader fr, PrintWriter out) { 
+        int n = fr.nextInt();
+        int x = fr.nextInt();
+
+        long[] nums = new long[n];
+        for(int i=0; i<n; i++){
+            nums[i] = fr.nextInt();
+        }
+
+        if(n < 2){
+            out.println(0);
+            return;
+        }
+        
+        int changes = -1, v = 0;
+        for(int i=0; i<n-1; i++){
+            int diff = nums[i] - nums[i-1];
+            if(diff < 2*x){
+                c
+            }
+            else{
+
+            }
+        }
+        
+
+        out.println();
+    }
+}

@@ -47,6 +47,43 @@ public class Sorting {
         out.close();
     }
 
+    static void mergeSort(int low, int high, List<Integer> nums){
+        if(low >= high) return;
+        int mid = low + (high-low)/2;
+
+        mergeSort(low, mid, nums);
+        mergeSort(mid+1, high, nums);
+        merge(low, mid, high, nums);
+    }
+
+    static void merge(int low, int mid, int high, List<Integer> nums){
+        int[] b = new int[high+1];
+
+        int i=low, j=mid+1, curr=low;
+        while(i <= mid && j <= high){
+            if(nums.get(i) <= nums.get(j)){
+                b[curr] = nums.get(i);
+                i++;
+            }
+            else{ b[curr] = nums.get(j); j++; }
+            curr++;
+        }
+
+        while(i <= mid){
+            b[curr] = nums.get(i);
+            i++;curr++;
+        }
+
+        while(j <= high){
+            b[curr] = nums.get(j);
+            j++;curr++;
+        }
+
+        for(int k=low; k<=high; k++){
+            nums.set(k, b[k]);
+        }
+    }
+
     static void solve(FastReader fr, PrintWriter out) {
         int n = fr.nextInt();
         List<Integer> nums = new ArrayList<>();
@@ -95,59 +132,59 @@ public class Sorting {
         // Insertion Sort:
         // Sorted | Unsorted: Put unsorted element at is correct place.
         // Stable | BC: O() , WC: O()
-        for(int j=1; j<n; j++){
-            int key = nums.get(j);
-            int idx = j-1;
+        // for(int j=1; j<n; j++){
+        //     int key = nums.get(j);
+        //     int idx = j-1;
 
-            while(idx >= 0 && nums.get(idx) > key){
-                nums.set(idx + 1, nums.get(idx));
-                idx--;
-            }
-            nums.set(idx + 1, key);
-        }
+        //     while(idx >= 0 && nums.get(idx) > key){
+        //         nums.set(idx + 1, nums.get(idx));
+        //         idx--;
+        //     }
+        //     nums.set(idx + 1, key);
+        // }
 
         // Radix Sort: 
         // Non Comparison Based, Makes use of bucket/bins, SC: O(n), TC: O(n*d)
         // Find Max: You need the maximum number to know how many digits to process.
         // Digit Extraction: To get the digit at the exp place (1s, 10s, 100s): (number / exp) % 10.
         // Stable Sub-sort: You must use a stable sorting algorithm (like Counting Sort) for each digit; otherwise, the previous digit-sorting work is ruined.
-        int max_ele = nums.get(0);
-        int digitCnt = 0;
-        for(int i=1; i<n; i++){
-            if(nums.get(i) > max_ele) max_ele = nums.get(i);
-        }
+        // int max_ele = nums.get(0);
+        // int digitCnt = 0;
+        // for(int i=1; i<n; i++){
+        //     if(nums.get(i) > max_ele) max_ele = nums.get(i);
+        // }
 
-        int tmp = max_ele;
-        while(tmp > 0){
-            tmp /= 10;
-            digitCnt++;
-        }
+        // int tmp = max_ele;
+        // while(tmp > 0){
+        //     tmp /= 10;
+        //     digitCnt++;
+        // }
 
-        int divisor = 1;
-        for(int pass = 1; pass <= digitCnt; pass++){
+        // int divisor = 1;
+        // for(int pass = 1; pass <= digitCnt; pass++){
             
-            List<List<Integer>> buckets = new ArrayList<>();
-            for (int i = 0; i < 10; i++) buckets.add(new ArrayList<>());
+        //     List<List<Integer>> buckets = new ArrayList<>();
+        //     for (int i = 0; i < 10; i++) buckets.add(new ArrayList<>());
 
-            for(int i=0; i<n; i++){
-                int num = nums.get(i);
-                int bckt = (num/divisor) % 10;
-                buckets.get(bckt).add(num);
-            }
+        //     for(int i=0; i<n; i++){
+        //         int num = nums.get(i);
+        //         int bckt = (num/divisor) % 10;
+        //         buckets.get(bckt).add(num);
+        //     }
 
-            int curr = 0;
-            for(int i=0; i<=9; i++){
-                List<Integer> lst = buckets.get(i);
-                for(int num: lst){
-                    nums.set(curr++, num);
-                }
-            }
-            divisor *= 10;
-        }
+        //     int curr = 0;
+        //     for(int i=0; i<=9; i++){
+        //         List<Integer> lst = buckets.get(i);
+        //         for(int num: lst){
+        //             nums.set(curr++, num);
+        //         }
+        //     }
+        //     divisor *= 10;
+        // }
 
 
         // Merge Sort:
-        
+        mergeSort(0, n-1, nums);
 
         out.println("\nAfter Sorting: ");
         for(Integer num: nums){

@@ -147,14 +147,77 @@ Ways to create:
 
 ## Dependency Injection
 
+---
+
+## SpringBoot Application Architecture Patterns
+
+Start with good enough architecture and evolve as you go.
+
+- Event Management System (sample)
+  - Create events
+  - List events
+  - View event details
+  - Cancel event
+  - Register for an event
+  - Cancel registration
+  - Get the list of attendees for an event
+  - Get the status of a user's registration for an event
+  - Get the list of user's upcoming events and past attended events
+
+### Layered
+
+- Layered architecture using the package-by-layer approach
+- Code is structured by technical layers (Controller, Service, Repository, Mapper, etc.)
+  Means: We
+- Used primitive types (String, Integer, etc.) instead of Domain Types (Value Objects)
+  Means: No Specific Domain Class was created.
+- Used JPA entities as Domain Models
+- Anemic Domain Models with Transaction Script Pattern
+
+### Package by module
+
+### Modular Monolith Simple
+
+### Modular Monolith Tomato
+
+### Modular Monolith DDD Hexagonal Architecture
+
 ## Building App
 
-### Maven
+### Setting Up
 
-1. How to sync Dependency:
+1. Project Settings:
+   JDK - Free Community or Commercial (Oracle) or Performance (GraalVM)
+   SDK - physical code downloaded on system.
+   Language Level - You can switch to old versions.
+
+2. Manage Dependency
    - Change `pom.xml`
    - run `mvn clean install`
    - right click -> sync project
+
+3. resources
+   - SubFolder containing:
+     - db.migration
+     - application.properties
+
+### Execution
+
+1. Dependencies
+   We define dependencies such as TomCat Server, Redis, Kafka in pom.xml.
+2. Auto-Configuration
+   When we click run:
+   Maven packages code + external libraies into one big exceutable JAR. (Fat/Uber JAR)
+   SB scans for @Configuration and beans are defined.
+3. IoC Startup
+   IoC Container starts up and instantiates the beans.
+   Infra first: tomcat webserver
+   Connection: Redis, Kafka
+   Code last:
+4. Live
+   Ioc Container is routing the requests here.
+   Tomcat is listening, redis is spinning, code is working
+   Summary: Dependencies → Maven Build → Spring Boot Auto-Config → IoC Instantiation → Services Live.
 
 ### Controller
 

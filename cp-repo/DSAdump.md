@@ -16,6 +16,10 @@
 
 ## Array
 
+### Prefix / Suffix
+
+- [ ] [Jump Game](https://leetcode.com/problems/jump-game-ix/)*
+
 ### HashMap
 
 - [x] [Longest SubArray Sum K](https://www.geeksforgeeks.org/problems/longest-sub-array-with-sum-k0809/1)
